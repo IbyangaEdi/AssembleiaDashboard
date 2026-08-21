@@ -1,0 +1,881 @@
+<meta charset="utf-8">
+<title>Painel de Assembleias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Paleta escura fixa, espelhada de painelsolar.berluc.com.br (modo dark),
+     para manter a mesma identidade visual entre os painéis do domínio.
+     Tema único e deliberado — sem variante clara. */
+  :root {
+    --paper: #0B111C;
+    --surface: #121A28;
+    --surface-2: #182337;
+    --ink: #EAF0F8;
+    --ink-2: #B7C2D0;
+    --ink-soft: #7C8A9C;
+    --line: #223049;
+    --line-strong: #2C3C58;
+    --accent: #5B9BFF;
+    --accent-ink: #9CC3FF;
+    --accent-soft: #17253F;
+    --gold: #F3BE63;
+    --gold-soft: #2B2312;
+    --good: #34D399;
+    --good-soft: #113228;
+    --warning: #FBBF24;
+    --warning-soft: #33260B;
+    --bad: #F87171;
+    --bad-soft: #331414;
+    --header-bg: #060910;
+    --header-ink: #EAF0F8;
+    --header-ink-2: #6B7A8F;
+    --shadow: 0 2px 8px rgba(0,0,0,.28), 0 22px 44px -22px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .num, .mono, td.num, .kpi-value, .chip .n {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  a { color: inherit; }
+  button { font-family: inherit; }
+  ::selection { background: var(--accent-soft); }
+
+  /* ---------- Shell ---------- */
+  .shell { max-width: 1240px; margin: 0 auto; padding: 22px 24px 64px; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    background: var(--header-bg); color: var(--header-ink);
+    border-radius: 16px; padding: 22px 24px; margin-bottom: 22px;
+    box-shadow: var(--shadow);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .mark {
+    width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent-soft); color: var(--accent-ink);
+    font-weight: 700; font-size: 17px;
+  }
+  .brand .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--header-ink-2); margin-bottom: 2px;
+  }
+  .brand h1 { font-size: 20px; color: var(--header-ink); }
+  .brand .sub { color: var(--header-ink-2); font-size: 12.5px; margin-top: 2px; }
+  .meta { text-align: right; color: var(--header-ink-2); font-size: 12px; }
+  .meta .num { color: var(--header-ink); font-size: 12.5px; }
+
+  nav.tabs {
+    display: flex; gap: 2px; margin-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  nav.tabs button {
+    appearance: none; border: none; background: none; cursor: pointer;
+    color: var(--ink-soft);
+    font: 600 13px/1 "Inter", sans-serif; letter-spacing: .01em;
+    padding: 10px 4px; margin-right: 22px;
+    border-bottom: 2px solid transparent;
+    position: relative; top: 1px;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  nav.tabs button:hover { color: var(--ink); }
+  nav.tabs button.active { color: var(--ink); border-bottom-color: var(--accent); }
+  nav.tabs button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(3px);} to { opacity: 1; transform: none;} }
+  @media (prefers-reduced-motion: reduce) { .view.active { animation: none; } }
+
+  /* ---------- KPI row ---------- */
+  .kpis {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 22px;
+  }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px; box-shadow: var(--shadow);
+  }
+  .kpi .label {
+    font-size: 12px; font-weight: 600;
+    color: var(--ink-soft); margin-bottom: 6px;
+  }
+  .kpi-value { font-size: 24px; font-weight: 700; }
+  .kpi .hint { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+
+  /* ---------- Cards grid (Visão Geral) ---------- */
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .toolbar h2 { font-size: 17px; }
+  .toolbar .count { color: var(--ink-soft); font-size: 12.5px; }
+  input[type="search"] {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 10px; color: var(--ink); font: 13px "Inter", sans-serif;
+    min-width: 200px;
+  }
+
+  .cards {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px 15px; box-shadow: var(--shadow); cursor: pointer;
+    transition: border-color .15s ease, transform .15s ease;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .card:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .card-head .grupo { font-weight: 700; font-size: 19px; }
+  .card-head .credito { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 100px; white-space: nowrap;
+  }
+  .chip.ok { background: var(--good-soft); color: var(--good); }
+  .chip.off { background: var(--bad-soft); color: var(--bad); }
+  .chip.new { background: var(--warning-soft); color: var(--warning); }
+
+  .lance-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+  .lance-block .lbl { font-size: 11px; font-weight: 600; color: var(--ink-soft); }
+  .lance-block .val { font-size: 21px; font-weight: 700; }
+  .lance-block .delta { font-size: 11px; margin-left: 4px; }
+  .delta.up { color: var(--bad); }
+  .delta.down { color: var(--good); }
+  .delta.flat { color: var(--ink-soft); }
+
+  .spark { flex-shrink: 0; }
+
+  .card-foot {
+    display: flex; justify-content: space-between; font-size: 12px;
+    color: var(--ink-soft); border-top: 1px dashed var(--line); padding-top: 9px;
+  }
+  .card-foot b { color: var(--ink); font-weight: 600; }
+  .card-foot .stat { display: flex; flex-direction: column; gap: 1px; }
+  .card-foot .stat .n { font-size: 13.5px; }
+
+  .empty-state {
+    color: var(--ink-soft); font-size: 13px; padding: 30px 4px; text-align: center;
+    border: 1px dashed var(--line); border-radius: 14px;
+  }
+
+  /* ---------- Grupo view ---------- */
+  .grupo-layout { display: grid; grid-template-columns: 230px 1fr; gap: 20px; align-items: start; }
+  .grupo-picker {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 10px; max-height: 640px; overflow-y: auto; box-shadow: var(--shadow);
+  }
+  .grupo-picker .item {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    padding: 8px 9px; border-radius: 8px; cursor: pointer; font-size: 13px;
+  }
+  .grupo-picker .item:hover { background: var(--surface-2); }
+  .grupo-picker .item.active { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; }
+  .grupo-picker .item .g { font-family: "Inter", sans-serif; font-variant-numeric: tabular-nums; }
+  .grupo-picker .item .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot.ok { background: var(--good); }
+  .dot.off { background: var(--bad); }
+  .dot.new { background: var(--warning); }
+
+  .detail-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+    margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .detail-head h2 { font-size: 26px; }
+  .detail-head .credito { color: var(--ink-soft); font-size: 13px; margin-top: 4px; }
+  .detail-facts { display: flex; gap: 22px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); }
+  .detail-facts b { color: var(--ink); font-weight: 600; }
+
+  .range-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .range-toggle button {
+    appearance: none; border: none; background: var(--surface); color: var(--ink-soft);
+    padding: 6px 12px; font: 600 12px "Inter", sans-serif; cursor: pointer;
+    border-right: 1px solid var(--line);
+  }
+  .range-toggle button:last-child { border-right: none; }
+  .range-toggle button.active { background: var(--accent); color: #fff; }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px 20px; box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .panel h3 { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .panel h3 .range-toggle { font-size: 11px; }
+
+  .chart-wrap { width: 100%; overflow-x: auto; }
+  .callout-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+  .callout {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 13px 15px; box-shadow: var(--shadow);
+  }
+  .callout .label { font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 5px; }
+  .callout .value { font-size: 22px; font-weight: 700; }
+  .callout .value.good { color: var(--good); }
+  .callout .value.bad { color: var(--bad); }
+  .callout .note { font-size: 11.5px; color: var(--ink-soft); margin-top: 3px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    text-align: left; font-size: 11px;
+    color: var(--ink-soft); font-weight: 600; padding: 0 10px 8px; border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap; cursor: default;
+  }
+  thead th.sortable { cursor: pointer; user-select: none; }
+  thead th.sortable:hover { color: var(--ink); }
+  thead th .arrow { opacity: .5; margin-left: 3px; }
+  tbody td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+  td.num, th.num { text-align: right; }
+  .badge-mod {
+    display: inline-block; font-size: 10.5px; padding: 1px 6px; border-radius: 5px;
+    background: var(--surface-2); color: var(--ink-soft); margin-right: 3px;
+  }
+
+  .table-scroll { overflow-x: auto; }
+
+  /* ---------- Analítico ---------- */
+  .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .filters select {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 10px; color: var(--ink); font: 13px "Inter", sans-serif;
+  }
+  .btn {
+    appearance: none; border: none; background: var(--good);
+    color: #fff; border-radius: 999px; padding: 8px 16px; font: 600 12.5px "Inter", sans-serif;
+    cursor: pointer; transition: opacity .15s ease;
+  }
+  .btn:hover { opacity: .88; }
+  .btn.copied { background: var(--accent); }
+
+  footer.note {
+    margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--line);
+    font-size: 11.5px; color: var(--ink-soft); line-height: 1.6;
+  }
+
+  @media (max-width: 760px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grupo-layout { grid-template-columns: 1fr; }
+    .grupo-picker { max-height: 220px; }
+    .callout-row { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">§</span>
+      <div>
+        <div class="eyebrow">Painel &middot; CNP Consórcio</div>
+        <h1>Assembleias</h1>
+        <div class="sub">Grupos 1029&ndash;1048</div>
+      </div>
+    </div>
+    <div class="meta">
+      <div>Última coleta</div>
+      <div class="num" id="lastUpdate">—</div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button data-view="geral" class="active">Visão Geral</button>
+    <button data-view="grupo">Grupo</button>
+    <button data-view="analitico">Analítico</button>
+  </nav>
+
+  <!-- ===================== VISÃO GERAL ===================== -->
+  <section class="view active" id="view-geral">
+    <div class="kpis" id="kpiRow"></div>
+
+    <div class="toolbar">
+      <h2>Grupos</h2>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span class="count" id="cardCount"></span>
+        <input type="search" id="cardSearch" placeholder="Buscar grupo…">
+      </div>
+    </div>
+    <div class="cards" id="cardsGrid"></div>
+  </section>
+
+  <!-- ===================== GRUPO ===================== -->
+  <section class="view" id="view-grupo">
+    <div class="grupo-layout">
+      <div class="grupo-picker" id="grupoPicker"></div>
+      <div id="grupoDetail"></div>
+    </div>
+  </section>
+
+  <!-- ===================== ANALÍTICO ===================== -->
+  <section class="view" id="view-analitico">
+    <div class="toolbar">
+      <h2>Base analítica</h2>
+      <span class="count" id="analCount"></span>
+    </div>
+    <div class="filters">
+      <select id="filtroGrupo"><option value="">Todos os grupos</option></select>
+      <select id="filtroMes"><option value="">Todos os meses</option></select>
+      <button class="btn" id="copyBtn">Copiar como TSV</button>
+    </div>
+    <div class="table-scroll">
+      <table id="analTable">
+        <thead><tr></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="note">
+    Metodologia: <b>maior/menor lance</b> considera apenas a modalidade Lance Livre (sorteio e lance
+    fixo ficam de fora). <b>Pessoas no menor lance</b> vem da lista completa de ofertas da assembleia,
+    não só dos vencedores. <b>Não contemplados no menor lance</b> é uma aproximação
+    (pessoas no menor lance − contemplados por Lance Livre); quando maior ≠ menor lance no mesmo mês
+    o número é marcado com “~” por ser uma estimativa. Dados coletados manualmente no sistema
+    CNP Consórcio — ver roteiro de coleta mensal.
+  </footer>
+</div>
+
+<script id="raw-data" type="application/json">{"assembleias": [{"grupo": "001029", "numero_assembleia": 110, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 45.0, "menor_lance_pct": 45.0, "qtd_contemplados_total": 5, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 3, "qtd_pessoas_lance_igual_menor": 16, "qtd_parcelas_realizadas": 110}, {"grupo": "001029", "numero_assembleia": 109, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 45.5, "menor_lance_pct": 45.5, "qtd_contemplados_total": 10, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 8, "qtd_pessoas_lance_igual_menor": 12, "qtd_parcelas_realizadas": 109}, {"grupo": "001029", "numero_assembleia": 108, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 46.0, "menor_lance_pct": 46.0, "qtd_contemplados_total": 8, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 6, "qtd_pessoas_lance_igual_menor": 17, "qtd_parcelas_realizadas": 108}, {"grupo": "001029", "numero_assembleia": 107, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 46.5, "menor_lance_pct": 46.5, "qtd_contemplados_total": 6, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 4, "qtd_pessoas_lance_igual_menor": 13, "qtd_parcelas_realizadas": 107}, {"grupo": "001030", "numero_assembleia": 105, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 47.5, "menor_lance_pct": 47.5, "qtd_contemplados_total": 6, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 4, "qtd_pessoas_lance_igual_menor": 37, "qtd_parcelas_realizadas": 105}, {"grupo": "001030", "numero_assembleia": 104, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 48.0, "menor_lance_pct": 48.0, "qtd_contemplados_total": 6, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 4, "qtd_pessoas_lance_igual_menor": 38, "qtd_parcelas_realizadas": 104}, {"grupo": "001030", "numero_assembleia": 103, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 48.5, "menor_lance_pct": 48.5, "qtd_contemplados_total": 11, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 9, "qtd_pessoas_lance_igual_menor": 27, "qtd_parcelas_realizadas": 103}, {"grupo": "001030", "numero_assembleia": 102, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 49.0, "menor_lance_pct": 49.0, "qtd_contemplados_total": 9, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 7, "qtd_pessoas_lance_igual_menor": 28, "qtd_parcelas_realizadas": 102}, {"grupo": "001031", "numero_assembleia": 104, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 48.0, "menor_lance_pct": 48.0, "qtd_contemplados_total": 9, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 7, "qtd_pessoas_lance_igual_menor": 28, "qtd_parcelas_realizadas": 104}, {"grupo": "001031", "numero_assembleia": 103, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 48.5, "menor_lance_pct": 48.5, "qtd_contemplados_total": 7, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 5, "qtd_pessoas_lance_igual_menor": 32, "qtd_parcelas_realizadas": 103}, {"grupo": "001031", "numero_assembleia": 102, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 49.0, "menor_lance_pct": 49.0, "qtd_contemplados_total": 8, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 6, "qtd_pessoas_lance_igual_menor": 36, "qtd_parcelas_realizadas": 102}, {"grupo": "001031", "numero_assembleia": 101, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 49.5, "menor_lance_pct": 49.5, "qtd_contemplados_total": 7, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 5, "qtd_pessoas_lance_igual_menor": 42, "qtd_parcelas_realizadas": 101}, {"grupo": "001032", "numero_assembleia": 105, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 47.5, "menor_lance_pct": 47.5, "qtd_contemplados_total": 26, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 24, "qtd_pessoas_lance_igual_menor": 276, "qtd_parcelas_realizadas": 105}, {"grupo": "001032", "numero_assembleia": 104, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 48.0, "menor_lance_pct": 48.0, "qtd_contemplados_total": 38, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 36, "qtd_pessoas_lance_igual_menor": 317, "qtd_parcelas_realizadas": 104}, {"grupo": "001032", "numero_assembleia": 103, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 48.5, "menor_lance_pct": 48.5, "qtd_contemplados_total": 32, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 30, "qtd_pessoas_lance_igual_menor": 158, "qtd_parcelas_realizadas": 103}, {"grupo": "001032", "numero_assembleia": 102, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 49.0, "menor_lance_pct": 49.0, "qtd_contemplados_total": 30, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 28, "qtd_pessoas_lance_igual_menor": 287, "qtd_parcelas_realizadas": 102}, {"grupo": "001033", "numero_assembleia": 100, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 50.0, "menor_lance_pct": 50.0, "qtd_contemplados_total": 8, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 6, "qtd_pessoas_lance_igual_menor": 163, "qtd_parcelas_realizadas": 100}, {"grupo": "001033", "numero_assembleia": 99, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 50.5, "menor_lance_pct": 50.5, "qtd_contemplados_total": 9, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 7, "qtd_pessoas_lance_igual_menor": 176, "qtd_parcelas_realizadas": 99}, {"grupo": "001033", "numero_assembleia": 98, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 51.0, "menor_lance_pct": 51.0, "qtd_contemplados_total": 12, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 10, "qtd_pessoas_lance_igual_menor": 122, "qtd_parcelas_realizadas": 98}, {"grupo": "001033", "numero_assembleia": 97, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 51.5, "menor_lance_pct": 51.5, "qtd_contemplados_total": 11, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 9, "qtd_pessoas_lance_igual_menor": 156, "qtd_parcelas_realizadas": 97}, {"grupo": "001034", "numero_assembleia": 92, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 54.0, "menor_lance_pct": 54.0, "qtd_contemplados_total": 16, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 14, "qtd_pessoas_lance_igual_menor": 158, "qtd_parcelas_realizadas": 92}, {"grupo": "001034", "numero_assembleia": 91, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 54.5, "menor_lance_pct": 54.5, "qtd_contemplados_total": 13, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 11, "qtd_pessoas_lance_igual_menor": 137, "qtd_parcelas_realizadas": 91}, {"grupo": "001034", "numero_assembleia": 90, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 55.0, "menor_lance_pct": 55.0, "qtd_contemplados_total": 12, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 10, "qtd_pessoas_lance_igual_menor": 88, "qtd_parcelas_realizadas": 90}, {"grupo": "001034", "numero_assembleia": 89, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 55.5, "menor_lance_pct": 55.5, "qtd_contemplados_total": 13, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 11, "qtd_pessoas_lance_igual_menor": 143, "qtd_parcelas_realizadas": 89}, {"grupo": "001035", "numero_assembleia": 92, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 54.0, "menor_lance_pct": 54.0, "qtd_contemplados_total": 12, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 10, "qtd_pessoas_lance_igual_menor": 249, "qtd_parcelas_realizadas": 92}, {"grupo": "001035", "numero_assembleia": 91, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 54.5, "menor_lance_pct": 54.5, "qtd_contemplados_total": 10, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 8, "qtd_pessoas_lance_igual_menor": 270, "qtd_parcelas_realizadas": 91}, {"grupo": "001035", "numero_assembleia": 90, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 55.0, "menor_lance_pct": 55.0, "qtd_contemplados_total": 9, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 7, "qtd_pessoas_lance_igual_menor": 260, "qtd_parcelas_realizadas": 90}, {"grupo": "001035", "numero_assembleia": 89, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 55.5, "menor_lance_pct": 55.5, "qtd_contemplados_total": 14, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 12, "qtd_pessoas_lance_igual_menor": 311, "qtd_parcelas_realizadas": 89}, {"grupo": "001036", "numero_assembleia": 90, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 55.0, "menor_lance_pct": 55.0, "qtd_contemplados_total": 26, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 24, "qtd_pessoas_lance_igual_menor": 269, "qtd_parcelas_realizadas": 90}, {"grupo": "001036", "numero_assembleia": 89, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 55.5, "menor_lance_pct": 55.5, "qtd_contemplados_total": 32, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 30, "qtd_pessoas_lance_igual_menor": 234, "qtd_parcelas_realizadas": 89}, {"grupo": "001036", "numero_assembleia": 88, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 56.0, "menor_lance_pct": 56.0, "qtd_contemplados_total": 18, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 16, "qtd_pessoas_lance_igual_menor": 235, "qtd_parcelas_realizadas": 88}, {"grupo": "001036", "numero_assembleia": 87, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 56.5, "menor_lance_pct": 56.5, "qtd_contemplados_total": 22, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 20, "qtd_pessoas_lance_igual_menor": 233, "qtd_parcelas_realizadas": 87}, {"grupo": "001037", "numero_assembleia": 88, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 56.0, "menor_lance_pct": 56.0, "qtd_contemplados_total": 22, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 20, "qtd_pessoas_lance_igual_menor": 471, "qtd_parcelas_realizadas": 88}, {"grupo": "001037", "numero_assembleia": 87, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 56.5, "menor_lance_pct": 56.5, "qtd_contemplados_total": 23, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 21, "qtd_pessoas_lance_igual_menor": 437, "qtd_parcelas_realizadas": 87}, {"grupo": "001037", "numero_assembleia": 86, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 57.0, "menor_lance_pct": 57.0, "qtd_contemplados_total": 30, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 28, "qtd_pessoas_lance_igual_menor": 391, "qtd_parcelas_realizadas": 86}, {"grupo": "001037", "numero_assembleia": 85, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 57.5, "menor_lance_pct": 57.5, "qtd_contemplados_total": 22, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 20, "qtd_pessoas_lance_igual_menor": 426, "qtd_parcelas_realizadas": 85}, {"grupo": "001038", "numero_assembleia": 86, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 57.0, "menor_lance_pct": 57.0, "qtd_contemplados_total": 23, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 21, "qtd_pessoas_lance_igual_menor": 522, "qtd_parcelas_realizadas": 86}, {"grupo": "001038", "numero_assembleia": 85, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 57.5, "menor_lance_pct": 57.5, "qtd_contemplados_total": 23, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 21, "qtd_pessoas_lance_igual_menor": 536, "qtd_parcelas_realizadas": 85}, {"grupo": "001038", "numero_assembleia": 84, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 58.0, "menor_lance_pct": 58.0, "qtd_contemplados_total": 29, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 27, "qtd_pessoas_lance_igual_menor": 466, "qtd_parcelas_realizadas": 84}, {"grupo": "001038", "numero_assembleia": 83, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 58.5, "menor_lance_pct": 58.5, "qtd_contemplados_total": 21, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 19, "qtd_pessoas_lance_igual_menor": 519, "qtd_parcelas_realizadas": 83}, {"grupo": "001039", "numero_assembleia": 81, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 59.5, "menor_lance_pct": 59.5, "qtd_contemplados_total": 11, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 9, "qtd_pessoas_lance_igual_menor": 122, "qtd_parcelas_realizadas": 81}, {"grupo": "001039", "numero_assembleia": 80, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 60.0, "menor_lance_pct": 60.0, "qtd_contemplados_total": 8, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 6, "qtd_pessoas_lance_igual_menor": 142, "qtd_parcelas_realizadas": 80}, {"grupo": "001039", "numero_assembleia": 79, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 60.5, "menor_lance_pct": 60.5, "qtd_contemplados_total": 15, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 13, "qtd_pessoas_lance_igual_menor": 137, "qtd_parcelas_realizadas": 79}, {"grupo": "001039", "numero_assembleia": 78, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 61.0, "menor_lance_pct": 61.0, "qtd_contemplados_total": 13, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 11, "qtd_pessoas_lance_igual_menor": 165, "qtd_parcelas_realizadas": 78}, {"grupo": "001040", "numero_assembleia": 80, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 60.0, "menor_lance_pct": 60.0, "qtd_contemplados_total": 19, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 17, "qtd_pessoas_lance_igual_menor": 108, "qtd_parcelas_realizadas": 80}, {"grupo": "001040", "numero_assembleia": 79, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 60.5, "menor_lance_pct": 60.5, "qtd_contemplados_total": 12, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 10, "qtd_pessoas_lance_igual_menor": 74, "qtd_parcelas_realizadas": 79}, {"grupo": "001040", "numero_assembleia": 78, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 61.0, "menor_lance_pct": 61.0, "qtd_contemplados_total": 15, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 13, "qtd_pessoas_lance_igual_menor": 45, "qtd_parcelas_realizadas": 78}, {"grupo": "001040", "numero_assembleia": 77, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 61.5, "menor_lance_pct": 61.5, "qtd_contemplados_total": 11, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 9, "qtd_pessoas_lance_igual_menor": 73, "qtd_parcelas_realizadas": 77}, {"grupo": "001041", "numero_assembleia": 78, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 61.0, "menor_lance_pct": 61.0, "qtd_contemplados_total": 8, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 6, "qtd_pessoas_lance_igual_menor": 75, "qtd_parcelas_realizadas": 78}, {"grupo": "001041", "numero_assembleia": 77, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 61.5, "menor_lance_pct": 61.5, "qtd_contemplados_total": 9, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 7, "qtd_pessoas_lance_igual_menor": 134, "qtd_parcelas_realizadas": 77}, {"grupo": "001041", "numero_assembleia": 76, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 62.0, "menor_lance_pct": 62.0, "qtd_contemplados_total": 7, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 5, "qtd_pessoas_lance_igual_menor": 107, "qtd_parcelas_realizadas": 76}, {"grupo": "001041", "numero_assembleia": 75, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 62.5, "menor_lance_pct": 62.5, "qtd_contemplados_total": 9, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 7, "qtd_pessoas_lance_igual_menor": 124, "qtd_parcelas_realizadas": 75}, {"grupo": "001042", "numero_assembleia": 76, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 62.0, "menor_lance_pct": 62.0, "qtd_contemplados_total": 23, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 21, "qtd_pessoas_lance_igual_menor": 390, "qtd_parcelas_realizadas": 76}, {"grupo": "001042", "numero_assembleia": 75, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 62.5, "menor_lance_pct": 62.5, "qtd_contemplados_total": 30, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 28, "qtd_pessoas_lance_igual_menor": 359, "qtd_parcelas_realizadas": 75}, {"grupo": "001042", "numero_assembleia": 74, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 63.0, "menor_lance_pct": 63.0, "qtd_contemplados_total": 23, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 21, "qtd_pessoas_lance_igual_menor": 306, "qtd_parcelas_realizadas": 74}, {"grupo": "001042", "numero_assembleia": 73, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 63.5, "menor_lance_pct": 63.5, "qtd_contemplados_total": 18, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 16, "qtd_pessoas_lance_igual_menor": 340, "qtd_parcelas_realizadas": 73}, {"grupo": "001043", "numero_assembleia": 60, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 70.0, "menor_lance_pct": 70.0, "qtd_contemplados_total": 19, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 17, "qtd_pessoas_lance_igual_menor": 125, "qtd_parcelas_realizadas": 60}, {"grupo": "001043", "numero_assembleia": 59, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 70.5, "menor_lance_pct": 70.5, "qtd_contemplados_total": 10, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 8, "qtd_pessoas_lance_igual_menor": 108, "qtd_parcelas_realizadas": 59}, {"grupo": "001043", "numero_assembleia": 58, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 71.0, "menor_lance_pct": 71.0, "qtd_contemplados_total": 10, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 8, "qtd_pessoas_lance_igual_menor": 47, "qtd_parcelas_realizadas": 58}, {"grupo": "001043", "numero_assembleia": 57, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 71.5, "menor_lance_pct": 71.5, "qtd_contemplados_total": 15, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 13, "qtd_pessoas_lance_igual_menor": 95, "qtd_parcelas_realizadas": 57}, {"grupo": "001044", "numero_assembleia": 49, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 2, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 49}, {"grupo": "001044", "numero_assembleia": 48, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 2, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 48}, {"grupo": "001044", "numero_assembleia": 47, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 3, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 2, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 47}, {"grupo": "001044", "numero_assembleia": 46, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 77.0, "menor_lance_pct": 77.0, "qtd_contemplados_total": 3, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 1, "qtd_pessoas_lance_igual_menor": 73, "qtd_parcelas_realizadas": 46}, {"grupo": "001045", "numero_assembleia": 36, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 82.0, "menor_lance_pct": 82.0, "qtd_contemplados_total": 25, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 23, "qtd_pessoas_lance_igual_menor": 23, "qtd_parcelas_realizadas": 36}, {"grupo": "001045", "numero_assembleia": 35, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": 82.5, "menor_lance_pct": 82.5, "qtd_contemplados_total": 4, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 2, "qtd_pessoas_lance_igual_menor": 39, "qtd_parcelas_realizadas": 35}, {"grupo": "001045", "numero_assembleia": 34, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 83.0, "menor_lance_pct": 83.0, "qtd_contemplados_total": 11, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 9, "qtd_pessoas_lance_igual_menor": 20, "qtd_parcelas_realizadas": 34}, {"grupo": "001045", "numero_assembleia": 33, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": 83.5, "menor_lance_pct": 83.5, "qtd_contemplados_total": 11, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 9, "qtd_pessoas_lance_igual_menor": 33, "qtd_parcelas_realizadas": 33}, {"grupo": "001046", "numero_assembleia": null, "data_assembleia": null, "mes_referencia": null, "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 0, "qtd_contemplados_sorteio": 0, "qtd_contemplados_lance_fixo": 0, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": null}, {"grupo": "001047", "numero_assembleia": 24, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 2, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 24}, {"grupo": "001047", "numero_assembleia": 23, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 2, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 23}, {"grupo": "001047", "numero_assembleia": 22, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 2, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 22}, {"grupo": "001047", "numero_assembleia": 21, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 1, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 0, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 21}, {"grupo": "001048", "numero_assembleia": 20, "data_assembleia": "17/08/2026", "mes_referencia": "2026-08", "maior_lance_pct": 90.0, "menor_lance_pct": 80.0, "qtd_contemplados_total": 6, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 4, "qtd_pessoas_lance_igual_menor": 2, "qtd_parcelas_realizadas": 20}, {"grupo": "001048", "numero_assembleia": 19, "data_assembleia": "20/07/2026", "mes_referencia": "2026-07", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 1, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 0, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 19}, {"grupo": "001048", "numero_assembleia": 18, "data_assembleia": "15/06/2026", "mes_referencia": "2026-06", "maior_lance_pct": 78.0, "menor_lance_pct": 78.0, "qtd_contemplados_total": 4, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 1, "qtd_contemplados_lance_livre": 2, "qtd_pessoas_lance_igual_menor": 3, "qtd_parcelas_realizadas": 18}, {"grupo": "001048", "numero_assembleia": 17, "data_assembleia": "18/05/2026", "mes_referencia": "2026-05", "maior_lance_pct": null, "menor_lance_pct": null, "qtd_contemplados_total": 1, "qtd_contemplados_sorteio": 1, "qtd_contemplados_lance_fixo": 0, "qtd_contemplados_lance_livre": 0, "qtd_pessoas_lance_igual_menor": 0, "qtd_parcelas_realizadas": 17}], "grupos": [{"grupo": "001029", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "NOVOS GRUPOS | R$ 150 a R$ 300 Mil", "prazo_meses": 200, "qtd_cotas": 1000, "assembleia_corrente": 111, "primeira_assembleia": "17/07/2017", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/02/2034"}, {"grupo": "001030", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "NOVOS GRUPOS | R$ 150 a R$ 300 Mil", "prazo_meses": 200, "qtd_cotas": 1000, "assembleia_corrente": 106, "primeira_assembleia": "01/12/2017", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/07/2034"}, {"grupo": "001031", "situacao": "A", "valor_bem_menor": 400000.0, "valor_bem_maior": 700000.0, "caracteristica": "NOVOS GRUPOS | R$ 400 a R$ 700 mil.", "prazo_meses": 200, "qtd_cotas": 1000, "assembleia_corrente": 105, "primeira_assembleia": "19/01/2018", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/08/2034"}, {"grupo": "001032", "situacao": "A", "valor_bem_menor": 70000.0, "valor_bem_maior": 140000.0, "caracteristica": "R$ 70 a R$ 140 MIL", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 106, "primeira_assembleia": "18/12/2017", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/07/2034"}, {"grupo": "001033", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 101, "primeira_assembleia": "23/05/2018", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/12/2034"}, {"grupo": "001034", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 93, "primeira_assembleia": "04/01/2019", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/08/2035"}, {"grupo": "001035", "situacao": "A", "valor_bem_menor": 70000.0, "valor_bem_maior": 140000.0, "caracteristica": "R$ 70 a R$ 140 MIL", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 93, "primeira_assembleia": "28/01/2019", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/08/2035"}, {"grupo": "001036", "situacao": "A", "valor_bem_menor": 70000.0, "valor_bem_maior": 140000.0, "caracteristica": "R$ 70 a R$ 140 MIL", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 91, "primeira_assembleia": "18/03/2019", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/10/2035"}, {"grupo": "001037", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 89, "primeira_assembleia": "20/05/2019", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/12/2035"}, {"grupo": "001038", "situacao": "A", "valor_bem_menor": 400000.0, "valor_bem_maior": 700000.0, "caracteristica": "R$ 400 mil a R$ 700 mil", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 87, "primeira_assembleia": "12/07/2019", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/02/2036"}, {"grupo": "001039", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 82, "primeira_assembleia": "04/12/2019", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "20/07/2036"}, {"grupo": "001040", "situacao": "A", "valor_bem_menor": 70000.0, "valor_bem_maior": 140000.0, "caracteristica": "R$ 70 a R$ 140 MIL", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 81, "primeira_assembleia": "07/01/2020", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "11/08/2036"}, {"grupo": "001041", "situacao": "A", "valor_bem_menor": 70000.0, "valor_bem_maior": 140000.0, "caracteristica": "R$ 70 a R$ 140 MIL", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 79, "primeira_assembleia": "31/03/2020", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "13/10/2036"}, {"grupo": "001042", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 77, "primeira_assembleia": "28/05/2020", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "15/12/2036"}, {"grupo": "001043", "situacao": "A", "valor_bem_menor": 70000.0, "valor_bem_maior": 140000.0, "caracteristica": "R$ 70 a R$ 140 MIL", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 61, "primeira_assembleia": "30/09/2021", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "12/04/2038"}, {"grupo": "001044", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 1000, "assembleia_corrente": 50, "primeira_assembleia": "30/08/2022", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "14/03/2039"}, {"grupo": "001045", "situacao": "A", "valor_bem_menor": 70000.0, "valor_bem_maior": 140000.0, "caracteristica": "R$ 70 a R$ 140 MIL", "prazo_meses": 200, "qtd_cotas": 9999, "assembleia_corrente": 37, "primeira_assembleia": "14/09/2023", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "16/04/2040"}, {"grupo": "001046", "situacao": "Z", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 1000, "assembleia_corrente": 28, "primeira_assembleia": "17/06/2024", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "14/01/2041"}, {"grupo": "001047", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 2000, "assembleia_corrente": 25, "primeira_assembleia": "30/08/2024", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "11/03/2041"}, {"grupo": "001048", "situacao": "A", "valor_bem_menor": 150000.0, "valor_bem_maior": 300000.0, "caracteristica": "R$ 150 mil a R$ 300 mil", "prazo_meses": 200, "qtd_cotas": 2000, "assembleia_corrente": 21, "primeira_assembleia": "20/01/2025", "proxima_assembleia": "21/09/2026", "encerramento_previsto": "12/08/2041"}]}</script>
+<script>
+(function () {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("raw-data").textContent);
+
+  const fmtPct = (v) => (v === null || v === undefined) ? "—" : v.toFixed(2).replace(".", ",") + "%";
+  const fmtInt = (v) => (v === null || v === undefined) ? "—" : String(v);
+  const fmtBRL = (v) => (v === null || v === undefined) ? "—" :
+    "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+  // ---------------------------------------------------------------
+  // Preparação dos dados
+  // ---------------------------------------------------------------
+  const grupoInfo = {};
+  DATA.grupos.forEach(g => grupoInfo[g.grupo] = g);
+
+  const byGrupo = {};
+  DATA.assembleias.forEach(r => {
+    (byGrupo[r.grupo] = byGrupo[r.grupo] || []).push(r);
+  });
+  Object.values(byGrupo).forEach(arr => arr.sort((a, b) => (b.numero_assembleia || -1) - (a.numero_assembleia || -1)));
+
+  const grupoCodes = Object.keys(grupoInfo).sort();
+
+  function situacaoInfo(codigo) {
+    const info = grupoInfo[codigo];
+    const rows = byGrupo[codigo] || [];
+    const hasHistory = rows.some(r => r.numero_assembleia !== null);
+    if (!hasHistory) return { label: "Sem histórico", cls: "new", dot: "new" };
+    if (info.situacao === "Z") return { label: "Encerrado", cls: "off", dot: "off" };
+    return { label: "Ativo", cls: "ok", dot: "ok" };
+  }
+
+  function naoContempladosMenor(r) {
+    if (r.menor_lance_pct === null) return { value: null, approx: false };
+    const approx = r.maior_lance_pct !== r.menor_lance_pct;
+    const val = Math.max((r.qtd_pessoas_lance_igual_menor || 0) - (r.qtd_contemplados_lance_livre || 0), 0);
+    return { value: val, approx };
+  }
+
+  function candidatosPorVaga(r) {
+    if (!r.qtd_contemplados_lance_livre) return null;
+    return (r.qtd_pessoas_lance_igual_menor || 0) / r.qtd_contemplados_lance_livre;
+  }
+
+  // ---------------------------------------------------------------
+  // Sparkline SVG
+  // ---------------------------------------------------------------
+  function sparkline(values, w, h, colorVar) {
+    const valid = values.filter(v => v !== null && v !== undefined);
+    if (valid.length < 2) {
+      return `<svg width="${w}" height="${h}" class="spark"></svg>`;
+    }
+    const min = Math.min(...valid), max = Math.max(...valid);
+    const range = (max - min) || 1;
+    const n = values.length;
+    const step = w / (n - 1);
+    const pts = values.map((v, i) => {
+      const x = i * step;
+      const y = v === null ? null : h - ((v - min) / range) * (h - 6) - 3;
+      return [x, y];
+    });
+    let d = "";
+    pts.forEach(([x, y], i) => {
+      if (y === null) return;
+      d += (d === "" ? "M" : "L") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+    });
+    const last = pts[pts.length - 1];
+    const areaD = d ? `${d} L${last[0].toFixed(1)},${h} L0,${h} Z` : "";
+    return `<svg width="${w}" height="${h}" class="spark" viewBox="0 0 ${w} ${h}">
+      ${areaD ? `<path d="${areaD}" fill="var(${colorVar})" opacity="0.12"></path>` : ""}
+      <path d="${d}" fill="none" stroke="var(${colorVar})" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+      ${last[1] !== null ? `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.4" fill="var(${colorVar})"></circle>` : ""}
+    </svg>`;
+  }
+
+  // ---------------------------------------------------------------
+  // Tabs
+  // ---------------------------------------------------------------
+  const tabs = document.querySelectorAll("nav.tabs button");
+  const views = { geral: document.getElementById("view-geral"), grupo: document.getElementById("view-grupo"), analitico: document.getElementById("view-analitico") };
+  tabs.forEach(btn => btn.addEventListener("click", () => selectView(btn.dataset.view)));
+  function selectView(name) {
+    tabs.forEach(b => b.classList.toggle("active", b.dataset.view === name));
+    Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === name));
+  }
+
+  // last update = max data_assembleia across dataset
+  (function () {
+    let latest = null;
+    DATA.assembleias.forEach(r => {
+      if (!r.data_assembleia) return;
+      const [d, m, y] = r.data_assembleia.split("/");
+      const dt = new Date(+y, +m - 1, +d);
+      if (!latest || dt > latest) latest = dt;
+    });
+    document.getElementById("lastUpdate").textContent = latest ?
+      latest.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) : "—";
+  })();
+
+  // ---------------------------------------------------------------
+  // KPIs
+  // ---------------------------------------------------------------
+  function renderKpis() {
+    const ativos = grupoCodes.filter(c => situacaoInfo(c).cls === "ok");
+    const latestMenores = ativos.map(c => byGrupo[c][0]).filter(r => r && r.menor_lance_pct !== null).map(r => r.menor_lance_pct);
+    const media = latestMenores.length ? (latestMenores.reduce((a, b) => a + b, 0) / latestMenores.length) : null;
+
+    let maisConcorrido = null, maiorRatio = -1;
+    ativos.forEach(c => {
+      const r = byGrupo[c][0];
+      if (!r) return;
+      const ratio = candidatosPorVaga(r);
+      if (ratio !== null && ratio > maiorRatio) { maiorRatio = ratio; maisConcorrido = c; }
+    });
+
+    let maiorPressao = null, maiorMenor = -1;
+    ativos.forEach(c => {
+      const r = byGrupo[c][0];
+      if (r && r.menor_lance_pct !== null && r.menor_lance_pct > maiorMenor) { maiorMenor = r.menor_lance_pct; maiorPressao = c; }
+    });
+
+    const kpis = [
+      { label: "Grupos acompanhados", value: grupoCodes.length, hint: `${ativos.length} ativos` },
+      { label: "Menor lance médio (ativos)", value: media !== null ? fmtPct(media) : "—", hint: "última assembleia de cada grupo" },
+      { label: "Maior concorrência por vaga", value: maisConcorrido ? maisConcorrido.replace(/^0+/, "") : "—", hint: maiorRatio > 0 ? `${maiorRatio.toFixed(1).replace(".", ",")} candidatos por vaga` : "" },
+      { label: "Maior pressão de lance", value: maiorPressao ? maiorPressao.replace(/^0+/, "") : "—", hint: maiorMenor > 0 ? `menor lance em ${fmtPct(maiorMenor)}` : "" },
+    ];
+    document.getElementById("kpiRow").innerHTML = kpis.map(k => `
+      <div class="kpi">
+        <div class="label">${k.label}</div>
+        <div class="kpi-value num">${k.value}</div>
+        <div class="hint">${k.hint}</div>
+      </div>`).join("");
+  }
+
+  // ---------------------------------------------------------------
+  // Cards (Visão Geral)
+  // ---------------------------------------------------------------
+  function renderCards(filterText) {
+    const filter = (filterText || "").trim().toLowerCase();
+    const grid = document.getElementById("cardsGrid");
+    const codes = grupoCodes.filter(c => c.toLowerCase().includes(filter) || c.replace(/^0+/, "").includes(filter));
+    document.getElementById("cardCount").textContent = `${codes.length} de ${grupoCodes.length}`;
+
+    if (!codes.length) {
+      grid.innerHTML = `<div class="empty-state">Nenhum grupo encontrado.</div>`;
+      return;
+    }
+
+    grid.innerHTML = codes.map(codigo => {
+      const rows = byGrupo[codigo] || [];
+      const info = grupoInfo[codigo];
+      const sit = situacaoInfo(codigo);
+      const latest = rows[0];
+      const prev = rows[1];
+
+      const menorSeries = rows.slice().reverse().map(r => r.menor_lance_pct);
+      const hasLatest = latest && latest.menor_lance_pct !== null;
+
+      let deltaHtml = "";
+      if (hasLatest && prev && prev.menor_lance_pct !== null) {
+        const d = latest.menor_lance_pct - prev.menor_lance_pct;
+        const cls = d > 0 ? "up" : d < 0 ? "down" : "flat";
+        const arrow = d > 0 ? "▲" : d < 0 ? "▼" : "•";
+        deltaHtml = `<span class="delta ${cls} num">${arrow} ${Math.abs(d).toFixed(2).replace(".", ",")}</span>`;
+      }
+
+      const ncm = hasLatest ? naoContempladosMenor(latest) : { value: null, approx: false };
+
+      return `
+      <div class="card" data-grupo="${codigo}">
+        <div class="card-head">
+          <div>
+            <div class="grupo">${codigo.replace(/^0+/, "")}</div>
+            <div class="credito">${fmtBRL(info.valor_bem_menor)} – ${fmtBRL(info.valor_bem_maior)}</div>
+          </div>
+          <span class="chip ${sit.cls}">${sit.label}</span>
+        </div>
+
+        ${hasLatest ? `
+        <div class="lance-row">
+          <div class="lance-block">
+            <div class="lbl">Menor lance</div>
+            <div class="val num">${fmtPct(latest.menor_lance_pct)}${deltaHtml}</div>
+          </div>
+          ${sparkline(menorSeries, 84, 34, "--gold")}
+        </div>` : `<div class="hint" style="color:var(--ink-soft); font-size:12.5px;">Sem lance livre registrado ainda.</div>`}
+
+        <div class="card-foot">
+          <div class="stat">
+            <span>Contemplados</span>
+            <span class="n num">${latest ? fmtInt(latest.qtd_contemplados_total) : "—"}</span>
+          </div>
+          <div class="stat">
+            <span>Não contempl. no menor</span>
+            <span class="n num">${ncm.value === null ? "—" : (ncm.approx ? "~" : "") + fmtInt(ncm.value)}</span>
+          </div>
+          <div class="stat" style="text-align:right;">
+            <span>Assembleia</span>
+            <span class="n num">${latest && latest.numero_assembleia !== null ? "#" + latest.numero_assembleia : "—"}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+
+    grid.querySelectorAll(".card").forEach(card => {
+      card.addEventListener("click", () => {
+        selectView("grupo");
+        selectGrupo(card.dataset.grupo);
+      });
+    });
+  }
+
+  document.getElementById("cardSearch").addEventListener("input", (e) => renderCards(e.target.value));
+
+  // ---------------------------------------------------------------
+  // Grupo (drill-down)
+  // ---------------------------------------------------------------
+  let currentGrupo = grupoCodes[0];
+  let currentRange = 3;
+
+  function renderPicker() {
+    const el = document.getElementById("grupoPicker");
+    el.innerHTML = grupoCodes.map(c => {
+      const sit = situacaoInfo(c);
+      return `<div class="item ${c === currentGrupo ? "active" : ""}" data-grupo="${c}">
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="dot ${sit.dot}"></span><span class="g">${c.replace(/^0+/, "")}</span>
+        </span>
+      </div>`;
+    }).join("");
+    el.querySelectorAll(".item").forEach(item => {
+      item.addEventListener("click", () => selectGrupo(item.dataset.grupo));
+    });
+  }
+
+  function selectGrupo(codigo) {
+    currentGrupo = codigo;
+    document.querySelectorAll("#grupoPicker .item").forEach(i => i.classList.toggle("active", i.dataset.grupo === codigo));
+    renderDetail();
+  }
+
+  function lineChart(rows, w, h) {
+    const chron = rows.slice().reverse();
+    const valid = chron.filter(r => r.menor_lance_pct !== null);
+    if (valid.length < 2) return `<div style="color:var(--ink-soft); font-size:12.5px; padding:10px 0;">Dados insuficientes para gráfico nesse período.</div>`;
+
+    const all = chron.flatMap(r => [r.menor_lance_pct, r.maior_lance_pct]).filter(v => v !== null);
+    const min = Math.min(...all), max = Math.max(...all);
+    const pad = (max - min) * 0.15 || 1;
+    const lo = min - pad, hi = max + pad;
+    const padL = 34, padB = 22, padT = 10, padR = 10;
+    const iw = w - padL - padR, ih = h - padT - padB;
+    const n = chron.length;
+    const stepX = n > 1 ? iw / (n - 1) : 0;
+    const yOf = (v) => padT + ih - ((v - lo) / (hi - lo)) * ih;
+    const xOf = (i) => padL + i * stepX;
+
+    function pathFor(key) {
+      let d = "";
+      chron.forEach((r, i) => {
+        const v = r[key];
+        if (v === null) return;
+        d += (d === "" ? "M" : "L") + xOf(i).toFixed(1) + "," + yOf(v).toFixed(1) + " ";
+      });
+      return d;
+    }
+    const gridLines = 3;
+    let grid = "";
+    for (let i = 0; i <= gridLines; i++) {
+      const y = padT + (ih / gridLines) * i;
+      const val = hi - ((hi - lo) / gridLines) * i;
+      grid += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${w - padR}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"></line>
+        <text x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9.5" fill="var(--ink-soft)" font-family="Inter, sans-serif">${val.toFixed(1)}%</text>`;
+    }
+    let xlabels = "";
+    chron.forEach((r, i) => {
+      xlabels += `<text x="${xOf(i).toFixed(1)}" y="${h - 5}" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)" font-family="Inter, sans-serif">#${r.numero_assembleia ?? "–"}</text>`;
+    });
+
+    const menorPath = pathFor("menor_lance_pct");
+    const maiorPath = pathFor("maior_lance_pct");
+    const lastValid = [...chron].reverse().find(r => r.menor_lance_pct !== null);
+    const lastIdx = chron.indexOf(lastValid);
+
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible;">
+      ${grid}
+      ${maiorPath ? `<path d="${maiorPath}" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="3 3"></path>` : ""}
+      ${menorPath ? `<path d="${menorPath}" fill="none" stroke="var(--gold)" stroke-width="2"></path>` : ""}
+      ${lastValid ? `<circle cx="${xOf(lastIdx).toFixed(1)}" cy="${yOf(lastValid.menor_lance_pct).toFixed(1)}" r="3" fill="var(--gold)"></circle>` : ""}
+      ${xlabels}
+    </svg>`;
+  }
+
+  function renderDetail() {
+    const codigo = currentGrupo;
+    const rows = byGrupo[codigo] || [];
+    const info = grupoInfo[codigo];
+    const sit = situacaoInfo(codigo);
+    const latest = rows[0];
+
+    const shown = currentRange === "all" ? rows : rows.slice(0, currentRange);
+
+    const ncm = latest ? naoContempladosMenor(latest) : { value: null, approx: false };
+    const ratio = latest ? candidatosPorVaga(latest) : null;
+
+    const tableRows = shown.map((r, i) => {
+      const prev = shown[i + 1] || rows[rows.indexOf(r) + 1];
+      let deltaMenor = "";
+      if (prev && r.menor_lance_pct !== null && prev.menor_lance_pct !== null) {
+        const d = r.menor_lance_pct - prev.menor_lance_pct;
+        const cls = d > 0 ? "up" : d < 0 ? "down" : "flat";
+        const arrow = d > 0 ? "▲" : d < 0 ? "▼" : "•";
+        deltaMenor = ` <span class="delta ${cls} num">${arrow}${Math.abs(d).toFixed(2).replace(".", ",")}</span>`;
+      }
+      const rowNcm = naoContempladosMenor(r);
+      return `<tr>
+        <td class="num">#${r.numero_assembleia ?? "–"}</td>
+        <td>${r.data_assembleia ?? "—"}</td>
+        <td class="num">${fmtPct(r.menor_lance_pct)}${deltaMenor}</td>
+        <td class="num">${fmtPct(r.maior_lance_pct)}</td>
+        <td class="num">${fmtInt(r.qtd_contemplados_total)}</td>
+        <td>
+          <span class="badge-mod">sorteio ${r.qtd_contemplados_sorteio}</span>
+          <span class="badge-mod">fixo ${r.qtd_contemplados_lance_fixo}</span>
+          <span class="badge-mod">livre ${r.qtd_contemplados_lance_livre}</span>
+        </td>
+        <td class="num">${fmtInt(r.qtd_pessoas_lance_igual_menor)}</td>
+        <td class="num">${rowNcm.value === null ? "—" : (rowNcm.approx ? "~" : "") + fmtInt(rowNcm.value)}</td>
+        <td class="num">${fmtInt(r.qtd_parcelas_realizadas)}</td>
+      </tr>`;
+    }).join("");
+
+    document.getElementById("grupoDetail").innerHTML = `
+      <div class="detail-head">
+        <div>
+          <h2>Grupo ${codigo.replace(/^0+/, "")} <span class="chip ${sit.cls}" style="vertical-align:middle; margin-left:6px;">${sit.label}</span></h2>
+          <div class="credito">${fmtBRL(info.valor_bem_menor)} – ${fmtBRL(info.valor_bem_maior)} · ${info.caracteristica || ""}</div>
+        </div>
+        <div class="detail-facts">
+          <div>Prazo <b>${info.prazo_meses ?? "—"} meses</b></div>
+          <div>1ª assembleia <b>${info.primeira_assembleia ?? "—"}</b></div>
+          <div>Próxima <b>${info.proxima_assembleia ?? "—"}</b></div>
+          <div>Encerramento previsto <b>${info.encerramento_previsto ?? "—"}</b></div>
+        </div>
+      </div>
+
+      ${latest ? `
+      <div class="callout-row">
+        <div class="callout">
+          <div class="label">Menor lance atual</div>
+          <div class="value num">${fmtPct(latest.menor_lance_pct)}</div>
+          <div class="note">assembleia #${latest.numero_assembleia ?? "–"} · ${latest.data_assembleia ?? "—"}</div>
+        </div>
+        <div class="callout">
+          <div class="label">Candidatos por vaga (livre)</div>
+          <div class="value num">${ratio === null ? "—" : ratio.toFixed(1).replace(".", ",")}</div>
+          <div class="note">${fmtInt(latest.qtd_pessoas_lance_igual_menor)} no menor lance ÷ ${fmtInt(latest.qtd_contemplados_lance_livre)} vagas</div>
+        </div>
+        <div class="callout">
+          <div class="label">Não contemplados no menor lance</div>
+          <div class="value num bad">${ncm.value === null ? "—" : (ncm.approx ? "~" : "") + fmtInt(ncm.value)}</div>
+          <div class="note">${ncm.approx ? "estimativa — maior e menor lance diferem nesse mês" : "ofertaram o mesmo % do vencedor e não foram sorteados"}</div>
+        </div>
+      </div>` : `<div class="empty-state" style="margin-bottom:18px;">Grupo ainda sem assembleia com lance livre registrada.</div>`}
+
+      <div class="panel">
+        <h3>
+          Evolução do lance
+          <span class="range-toggle" id="rangeToggle">
+            <button data-r="3">3</button><button data-r="6">6</button><button data-r="all">Tudo</button>
+          </span>
+        </h3>
+        <div class="chart-wrap">${lineChart(shown, 640, 170)}</div>
+      </div>
+
+      <div class="panel">
+        <h3>Comparativo entre assembleias</h3>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th class="num">Assemb.</th><th>Data</th><th class="num">Menor lance</th><th class="num">Maior lance</th>
+              <th class="num">Contempl.</th><th>Por modalidade</th><th class="num">No menor lance</th>
+              <th class="num">Não contempl.</th><th class="num">Parcela</th>
+            </tr></thead>
+            <tbody>${tableRows || `<tr><td colspan="9" style="color:var(--ink-soft); padding:14px 10px;">Sem registros.</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    const toggle = document.getElementById("rangeToggle");
+    if (toggle) {
+      toggle.querySelectorAll("button").forEach(b => {
+        const r = b.dataset.r === "all" ? "all" : +b.dataset.r;
+        b.classList.toggle("active", r === currentRange);
+        b.addEventListener("click", () => { currentRange = r; renderDetail(); });
+      });
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // Analítico
+  // ---------------------------------------------------------------
+  const analCols = [
+    { key: "grupo", label: "Grupo" },
+    { key: "numero_assembleia", label: "Assemb.", num: true },
+    { key: "data_assembleia", label: "Data" },
+    { key: "mes_referencia", label: "Mês ref." },
+    { key: "menor_lance_pct", label: "Menor %", num: true, fmt: fmtPct },
+    { key: "maior_lance_pct", label: "Maior %", num: true, fmt: fmtPct },
+    { key: "qtd_contemplados_total", label: "Contempl.", num: true },
+    { key: "qtd_contemplados_sorteio", label: "Sorteio", num: true },
+    { key: "qtd_contemplados_lance_fixo", label: "Lance fixo", num: true },
+    { key: "qtd_contemplados_lance_livre", label: "Lance livre", num: true },
+    { key: "qtd_pessoas_lance_igual_menor", label: "No menor lance", num: true },
+    { key: "qtd_parcelas_realizadas", label: "Parcelas", num: true },
+  ];
+  let analSort = { key: "grupo", dir: 1 };
+  let analFiltroGrupo = "", analFiltroMes = "";
+
+  function buildAnalFilters() {
+    const gSel = document.getElementById("filtroGrupo");
+    grupoCodes.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = c.replace(/^0+/, "");
+      gSel.appendChild(o);
+    });
+    const meses = [...new Set(DATA.assembleias.map(r => r.mes_referencia).filter(Boolean))].sort();
+    const mSel = document.getElementById("filtroMes");
+    meses.forEach(m => {
+      const o = document.createElement("option");
+      o.value = m; o.textContent = m;
+      mSel.appendChild(o);
+    });
+    gSel.addEventListener("change", () => { analFiltroGrupo = gSel.value; renderAnal(); });
+    mSel.addEventListener("change", () => { analFiltroMes = mSel.value; renderAnal(); });
+  }
+
+  function renderAnalHead() {
+    const tr = document.querySelector("#analTable thead tr");
+    tr.innerHTML = analCols.map(c => `<th class="sortable ${c.num ? "num" : ""}" data-key="${c.key}">${c.label}${analSort.key === c.key ? `<span class="arrow">${analSort.dir === 1 ? "↑" : "↓"}</span>` : ""}</th>`).join("");
+    tr.querySelectorAll("th").forEach(th => th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      if (analSort.key === key) analSort.dir *= -1; else analSort = { key, dir: 1 };
+      renderAnal();
+    }));
+  }
+
+  function renderAnal() {
+    let rows = DATA.assembleias.slice();
+    if (analFiltroGrupo) rows = rows.filter(r => r.grupo === analFiltroGrupo);
+    if (analFiltroMes) rows = rows.filter(r => r.mes_referencia === analFiltroMes);
+    rows.sort((a, b) => {
+      const av = a[analSort.key], bv = b[analSort.key];
+      if (av === null || av === undefined) return 1;
+      if (bv === null || bv === undefined) return -1;
+      if (av < bv) return -1 * analSort.dir;
+      if (av > bv) return 1 * analSort.dir;
+      return 0;
+    });
+    renderAnalHead();
+    document.getElementById("analCount").textContent = `${rows.length} registro${rows.length === 1 ? "" : "s"}`;
+    document.querySelector("#analTable tbody").innerHTML = rows.map(r => `<tr>${analCols.map(c => {
+      const v = r[c.key];
+      const out = c.fmt ? c.fmt(v) : (v === null || v === undefined ? "—" : v);
+      const cls = c.key === "grupo" ? "num" : (c.num ? "num" : "");
+      return `<td class="${cls}">${c.key === "grupo" ? v.replace(/^0+/, "") : out}</td>`;
+    }).join("")}</tr>`).join("");
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (err) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  document.getElementById("copyBtn").addEventListener("click", (e) => {
+    let rows = DATA.assembleias.slice();
+    if (analFiltroGrupo) rows = rows.filter(r => r.grupo === analFiltroGrupo);
+    if (analFiltroMes) rows = rows.filter(r => r.mes_referencia === analFiltroMes);
+    const header = analCols.map(c => c.label).join("\t");
+    const body = rows.map(r => analCols.map(c => {
+      const v = r[c.key];
+      return v === null || v === undefined ? "" : v;
+    }).join("\t")).join("\n");
+    const text = header + "\n" + body;
+    const btn = e.target;
+    const done = (ok) => {
+      btn.classList.add(ok ? "copied" : "");
+      btn.textContent = ok ? "Copiado!" : "Não foi possível copiar — selecione a tabela manualmente";
+      setTimeout(() => { btn.classList.remove("copied"); btn.textContent = "Copiar como TSV"; }, ok ? 1500 : 2600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => done(true)).catch(() => done(fallbackCopy(text)));
+    } else {
+      done(fallbackCopy(text));
+    }
+  });
+
+  // ---------------------------------------------------------------
+  // Init
+  // ---------------------------------------------------------------
+  renderKpis();
+  renderCards("");
+  renderPicker();
+  renderDetail();
+  buildAnalFilters();
+  renderAnal();
+})();
+</script>
