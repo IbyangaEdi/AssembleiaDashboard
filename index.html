@@ -34,6 +34,49 @@
     --shadow: 0 2px 8px rgba(0,0,0,.28), 0 22px 44px -22px rgba(0,0,0,.6);
   }
 
+  /* Exportar PDF: usa a impressão nativa do navegador (Salvar como PDF no diálogo de
+     impressão) sobre o visual já filtrado da tela. Paleta trocada para clara/impressa —
+     manter os tokens abaixo em sincronia se novas cores forem adicionadas ao tema. */
+  @media print {
+    :root {
+      --paper: #FFFFFF;
+      --surface: #FFFFFF;
+      --surface-2: #F2F4F7;
+      --ink: #10151F;
+      --ink-2: #384252;
+      --ink-soft: #5B6472;
+      --line: #D5DAE2;
+      --line-strong: #A8B1BD;
+      --accent: #1D4ED8;
+      --accent-ink: #1D4ED8;
+      --accent-soft: #E8EEFC;
+      --gold: #92620A;
+      --gold-soft: #FBF0DA;
+      --good: #067647;
+      --good-soft: #E3F6EC;
+      --warning: #92620A;
+      --warning-soft: #FBF0DA;
+      --bad: #B42318;
+      --bad-soft: #FBEAE8;
+      --header-bg: #FFFFFF;
+      --header-ink: #10151F;
+      --header-ink-2: #5B6472;
+      --shadow: none;
+    }
+    @page { size: A4 landscape; margin: 10mm; }
+    body { background: #fff; }
+    .topbar { border: 1px solid var(--line); }
+    nav.tabs, .filters select, .filters button, input[type="search"] { display: none !important; }
+    .card { break-inside: avoid; }
+    .cards { grid-template-columns: repeat(3, 1fr); }
+    .table-scroll { overflow: visible !important; width: 100% !important; }
+    #analTable { font-size: 7.5px; table-layout: fixed; width: 100% !important; }
+    #analTable th, #analTable td {
+      padding: 2px 3px; white-space: normal; word-break: break-word;
+      overflow-wrap: break-word; line-height: 1.2;
+    }
+  }
+
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
@@ -167,6 +210,7 @@
   .chip.new { background: var(--warning-soft); color: var(--warning); }
   .chip.vagas { background: var(--gold-soft); color: var(--gold); }
   .chip.vagas.zero { background: var(--bad-soft); color: var(--bad); }
+  .chip.maxlance { background: var(--warning-soft); color: var(--warning); }
 
   .lance-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
   .lance-block .lbl { font-size: 11px; font-weight: 600; color: var(--ink-soft); }
@@ -179,12 +223,11 @@
   .spark { flex-shrink: 0; }
 
   .card-foot {
-    display: flex; justify-content: space-between; font-size: 12px;
+    display: flex; flex-direction: column; gap: 5px; font-size: 12px;
     color: var(--ink-soft); border-top: 1px dashed var(--line); padding-top: 9px;
   }
-  .card-foot b { color: var(--ink); font-weight: 600; }
-  .card-foot .stat { display: flex; flex-direction: column; gap: 1px; }
-  .card-foot .stat .n { font-size: 13.5px; }
+  .card-foot .stat-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .card-foot .stat-row b { color: var(--ink); font-weight: 600; font-size: 13px; }
 
   .empty-state {
     color: var(--ink-soft); font-size: 13px; padding: 30px 4px; text-align: center;
@@ -279,15 +322,41 @@
     cursor: pointer; transition: opacity .15s ease;
   }
   .btn:hover { opacity: .88; }
-  .btn.copied { background: var(--accent); }
+  .btn.pdf { background: #15803D; }
+  .btn.pdf:hover { background: #12692F; opacity: 1; }
+  .btn.copied { background: var(--accent) !important; }
 
   /* ---------- Probabilidade (beta) ---------- */
   .prob-layout { display: grid; grid-template-columns: 230px 1fr; gap: 20px; align-items: start; }
-  .disclaimer {
-    background: var(--gold-soft); border: 1px solid var(--gold); border-radius: 10px;
-    padding: 11px 14px; font-size: 12px; color: var(--ink); line-height: 1.55; margin-bottom: 18px;
-  }
   .disclaimer b { color: var(--gold); }
+
+  .info-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent-soft); color: var(--accent-ink); border: 1px solid var(--accent);
+    font-size: 12px; font-weight: 700; cursor: pointer; margin-left: 5px; padding: 0;
+    font-family: "Inter", sans-serif; line-height: 1;
+    transition: background .15s ease, color .15s ease;
+  }
+  .info-btn:hover { background: var(--accent); color: #fff; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(6, 9, 16, .65);
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--gold); border-radius: 14px;
+    padding: 20px 24px 22px; max-width: 460px; box-shadow: var(--shadow); position: relative;
+  }
+  .modal-box h4 { color: var(--gold); font-size: 14px; margin-bottom: 10px; padding-right: 20px; }
+  .modal-box p { font-size: 12.5px; color: var(--ink); line-height: 1.6; }
+  .modal-box p b { color: var(--gold); }
+  .modal-close {
+    position: absolute; top: 12px; right: 14px; background: none; border: none;
+    color: var(--ink-soft); font-size: 20px; cursor: pointer; line-height: 1; padding: 2px;
+  }
+  .modal-close:hover { color: var(--ink); }
   .sim-row {
     display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 6px;
   }
@@ -295,9 +364,16 @@
     flex: 1; min-width: 180px; accent-color: var(--gold);
   }
   .sim-value {
-    font-family: "Inter", sans-serif; font-variant-numeric: tabular-nums;
-    font-size: 22px; font-weight: 700; color: var(--gold); min-width: 78px; text-align: right;
+    display: flex; align-items: baseline; gap: 4px;
   }
+  .sim-value input[type="number"] {
+    font-family: "Inter", sans-serif; font-variant-numeric: tabular-nums;
+    font-size: 22px; font-weight: 700; color: var(--gold); text-align: right;
+    width: 108px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 4px 8px;
+  }
+  .sim-value input[type="number"]:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .sim-value .unit { font-size: 16px; font-weight: 700; color: var(--gold); }
   .horizon-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
   .horizon-cell {
     background: var(--surface-2); border-radius: 10px; padding: 10px 12px; text-align: center;
@@ -376,6 +452,7 @@
         <option value="lance_asc">Ordenar: menor lance % primeiro</option>
         <option value="grupo_asc">Ordenar: número do grupo</option>
       </select>
+      <button class="btn pdf" id="exportPdfGeral">Exportar PDF</button>
     </div>
     <div class="cards" id="cardsGrid"></div>
   </section>
@@ -397,7 +474,8 @@
     <div class="filters">
       <select id="filtroGrupo"><option value="">Todos os grupos</option></select>
       <select id="filtroMes"><option value="">Todos os meses</option></select>
-      <button class="btn" id="copyBtn">Copiar como TSV</button>
+      <button class="btn pdf" id="copyBtn">Copiar como TSV</button>
+      <button class="btn pdf" id="exportPdfAnalitico">Exportar PDF</button>
     </div>
     <div class="table-scroll">
       <table id="analTable">
@@ -415,10 +493,18 @@
     </div>
   </section>
 
+  <div class="modal-overlay" id="probModalOverlay">
+    <div class="modal-box">
+      <button class="modal-close" id="probModalClose" aria-label="Fechar">&times;</button>
+      <h4>Como isso é calculado (estimativa, não garantia)</h4>
+      <p id="probModalText"></p>
+    </div>
+  </div>
+
   <footer class="note">
     Metodologia: <b>maior/menor lance</b> considera apenas a modalidade Lance Livre (sorteio e lance
     fixo ficam de fora). <b>Pessoas no menor lance</b> vem da lista completa de ofertas da assembleia,
-    não só dos vencedores. <b>Não contemplados no menor lance</b> é uma aproximação
+    não só dos vencedores. <b>Empatados não contemplados</b> é uma aproximação
     (pessoas no menor lance − contemplados por Lance Livre); quando maior ≠ menor lance no mesmo mês
     o número é marcado com “~” por ser uma estimativa. Dados coletados manualmente no sistema
     CNP Consórcio — ver roteiro de coleta mensal.
@@ -435,6 +521,20 @@
   const fmtInt = (v) => (v === null || v === undefined) ? "—" : String(v);
   const fmtBRL = (v) => (v === null || v === undefined) ? "—" :
     "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+  // Exporta a visão atual (já filtrada) como PDF via impressão do navegador.
+  // O título da aba vira o nome sugerido do arquivo no diálogo "Salvar como PDF".
+  function exportPdf() {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const yyyy = today.getFullYear();
+    const originalTitle = document.title;
+    document.title = `resultados${dd}${mm}${yyyy}`;
+    const restore = () => { document.title = originalTitle; };
+    window.addEventListener("afterprint", restore, { once: true });
+    window.print();
+  }
 
   // ---------------------------------------------------------------
   // Preparação dos dados
@@ -459,6 +559,7 @@
 
   const grupoCodes = Object.keys(grupoInfo).sort();
   const ASSEMBLEIAS_ATIVAS = DATA.assembleias.filter(r => grupoInfo[r.grupo]);
+  ASSEMBLEIAS_ATIVAS.forEach(r => { r.candidatos_por_vaga = candidatosPorVaga(r); });
 
   const byGrupo = {};
   ASSEMBLEIAS_ATIVAS.forEach(r => {
@@ -485,6 +586,26 @@
   function candidatosPorVaga(r) {
     if (!r.qtd_contemplados_lance_livre) return null;
     return (r.qtd_pessoas_lance_igual_menor || 0) / r.qtd_contemplados_lance_livre;
+  }
+
+  // Regra do lance máximo permitido: ((assembleia decorrida ÷ prazo total) - 1) × -1
+  // = 1 - (assembleia decorrida ÷ prazo total) = prazo restante ÷ prazo total.
+  // "Assembleia decorrida" = assembleia_corrente - 1, pois a assembleia corrente ainda vai
+  // acontecer (ainda não decorreu) — confirmado batendo exato com o menor lance histórico
+  // mínimo de vários grupos (1034, 1029, 1025, 2127).
+  function maxLancePct(info) {
+    if (!info.prazo_meses || !info.assembleia_corrente) return null;
+    const decorrida = info.assembleia_corrente - 1;
+    return Math.min(100, Math.max(0, (1 - decorrida / info.prazo_meses) * 100));
+  }
+
+  function ofertandoLanceMaximo(codigo) {
+    const info = grupoInfo[codigo];
+    const latest = (byGrupo[codigo] || [])[0];
+    if (!latest || latest.menor_lance_pct === null) return false;
+    const cap = maxLancePct(info);
+    if (cap === null) return false;
+    return latest.menor_lance_pct >= cap - 0.05;
   }
 
   // ---------------------------------------------------------------
@@ -605,10 +726,11 @@
         return a.localeCompare(b);
       });
     }
-    // Grupos sem vagas sempre vão para o final da lista, independente da ordenação escolhida.
-    const comVagas = arr.filter(c => (grupoInfo[c].vagas_nao_utilizadas || 0) > 0);
-    const semVagas = arr.filter(c => (grupoInfo[c].vagas_nao_utilizadas || 0) === 0);
-    return comVagas.concat(semVagas);
+    // Grupos sem histórico ou sem vagas sempre vão para o final da lista, independente da ordenação escolhida.
+    const deprioritized = (c) => situacaoInfo(c).cls === "new" || (grupoInfo[c].vagas_nao_utilizadas || 0) === 0;
+    const normais = arr.filter(c => !deprioritized(c));
+    const depriorizados = arr.filter(c => deprioritized(c));
+    return normais.concat(depriorizados);
   }
 
   function renderCards() {
@@ -645,6 +767,7 @@
       }
 
       const ncm = hasLatest ? naoContempladosMenor(latest) : { value: null, approx: false };
+      const isMax = ofertandoLanceMaximo(codigo);
 
       return `
       <div class="card" data-grupo="${codigo}">
@@ -653,9 +776,12 @@
             <div class="grupo">${codigo.replace(/^0+/, "")}</div>
             <div class="credito">${info.categoria ? info.categoria + " · " : ""}${fmtBRL(info.valor_bem_menor)} – ${fmtBRL(info.valor_bem_maior)}</div>
           </div>
-          <div style="display:flex; gap:5px; align-items:flex-start;">
-            <span class="chip ${sit.cls}">${sit.label}</span>
-            <span class="chip vagas${info.vagas_nao_utilizadas === 0 ? " zero" : ""}">${fmtInt(info.vagas_nao_utilizadas)} vaga${info.vagas_nao_utilizadas === 1 ? "" : "s"}</span>
+          <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
+            <div style="display:flex; gap:5px;">
+              <span class="chip ${sit.cls}">${sit.label}</span>
+              <span class="chip vagas${info.vagas_nao_utilizadas === 0 ? " zero" : ""}">${fmtInt(info.vagas_nao_utilizadas)} vaga${info.vagas_nao_utilizadas === 1 ? "" : "s"}</span>
+            </div>
+            ${isMax ? `<span class="chip maxlance">Ofertando lance máximo</span>` : ""}
           </div>
         </div>
 
@@ -669,18 +795,9 @@
         </div>` : `<div class="hint" style="color:var(--ink-soft); font-size:12.5px;">Sem lance livre registrado ainda.</div>`}
 
         <div class="card-foot">
-          <div class="stat">
-            <span>Contemplados</span>
-            <span class="n num">${latest ? fmtInt(latest.qtd_contemplados_total) : "—"}</span>
-          </div>
-          <div class="stat">
-            <span>Não contempl. no menor</span>
-            <span class="n num">${ncm.value === null ? "—" : (ncm.approx ? "~" : "") + fmtInt(ncm.value)}</span>
-          </div>
-          <div class="stat" style="text-align:right;">
-            <span>Assembleia</span>
-            <span class="n num">${latest && latest.numero_assembleia !== null ? "#" + latest.numero_assembleia : "—"}</span>
-          </div>
+          <div class="stat-row"><span>Contemplados</span><b class="num">${latest ? fmtInt(latest.qtd_contemplados_total) : "—"}</b></div>
+          <div class="stat-row"><span>Empatados não contemplados</span><b class="num">${ncm.value === null ? "—" : (ncm.approx ? "~" : "") + fmtInt(ncm.value)}</b></div>
+          <div class="stat-row"><span>Assembleia</span><b class="num">${latest && latest.numero_assembleia !== null ? latest.numero_assembleia + "/" + (info.prazo_meses ?? "—") : "—"}</b></div>
         </div>
       </div>`;
     }).join("");
@@ -697,6 +814,7 @@
   document.getElementById("filtroCategoria").addEventListener("change", (e) => { cardState.categoria = e.target.value; renderCards(); });
   document.getElementById("filtroVagas").addEventListener("change", (e) => { cardState.vagas = e.target.value; renderCards(); });
   document.getElementById("ordenarCards").addEventListener("change", (e) => { cardState.sort = e.target.value; renderCards(); });
+  document.getElementById("exportPdfGeral").addEventListener("click", exportPdf);
 
   // ---------------------------------------------------------------
   // Grupo (drill-down)
@@ -799,6 +917,7 @@
         deltaMenor = ` <span class="delta ${cls} num">${arrow}${Math.abs(d).toFixed(2).replace(".", ",")}</span>`;
       }
       const rowNcm = naoContempladosMenor(r);
+      const rowRatio = candidatosPorVaga(r);
       return `<tr>
         <td class="num">#${r.numero_assembleia ?? "–"}</td>
         <td>${r.data_assembleia ?? "—"}</td>
@@ -811,6 +930,7 @@
           <span class="badge-mod">livre ${r.qtd_contemplados_lance_livre}</span>
         </td>
         <td class="num">${fmtInt(r.qtd_pessoas_lance_igual_menor)}</td>
+        <td class="num">${rowRatio === null ? "—" : rowRatio.toFixed(1).replace(".", ",")}</td>
         <td class="num">${rowNcm.value === null ? "—" : (rowNcm.approx ? "~" : "") + fmtInt(rowNcm.value)}</td>
         <td class="num">${fmtInt(r.qtd_parcelas_realizadas)}</td>
       </tr>`;
@@ -847,7 +967,7 @@
           <div class="note">${fmtInt(latest.qtd_pessoas_lance_igual_menor)} no menor lance ÷ ${fmtInt(latest.qtd_contemplados_lance_livre)} vagas</div>
         </div>
         <div class="callout">
-          <div class="label">Não contemplados no menor lance</div>
+          <div class="label">Empatados não contemplados</div>
           <div class="value num bad">${ncm.value === null ? "—" : (ncm.approx ? "~" : "") + fmtInt(ncm.value)}</div>
           <div class="note">${ncm.approx ? "estimativa — maior e menor lance diferem nesse mês" : "ofertaram o mesmo % do vencedor e não foram sorteados"}</div>
         </div>
@@ -870,9 +990,9 @@
             <thead><tr>
               <th class="num">Assemb.</th><th>Data</th><th class="num">Menor lance</th><th class="num">Maior lance</th>
               <th class="num">Contempl.</th><th>Por modalidade</th><th class="num">No menor lance</th>
-              <th class="num">Não contempl.</th><th class="num">Parcela</th>
+              <th class="num">Cand./vaga</th><th class="num">Empatados não contempl.</th><th class="num">Parcela</th>
             </tr></thead>
-            <tbody>${tableRows || `<tr><td colspan="9" style="color:var(--ink-soft); padding:14px 10px;">Sem registros.</td></tr>`}</tbody>
+            <tbody>${tableRows || `<tr><td colspan="10" style="color:var(--ink-soft); padding:14px 10px;">Sem registros.</td></tr>`}</tbody>
           </table>
         </div>
       </div>
@@ -903,6 +1023,7 @@
     { key: "qtd_contemplados_lance_fixo", label: "Lance fixo", num: true },
     { key: "qtd_contemplados_lance_livre", label: "Lance livre", num: true },
     { key: "qtd_pessoas_lance_igual_menor", label: "No menor lance", num: true },
+    { key: "candidatos_por_vaga", label: "Cand./vaga", num: true, fmt: (v) => v === null || v === undefined ? "—" : v.toFixed(1).replace(".", ",") },
     { key: "qtd_parcelas_realizadas", label: "Parcelas", num: true },
   ];
   let analSort = { key: "grupo", dir: 1 };
@@ -995,6 +1116,8 @@
     }
   });
 
+  document.getElementById("exportPdfAnalitico").addEventListener("click", exportPdf);
+
   // ---------------------------------------------------------------
   // Probabilidade (beta)
   // ---------------------------------------------------------------
@@ -1033,8 +1156,6 @@
     const hitRate = total ? hits / total : null;
     const pMes = pSorteio !== null ? Math.min(1, pSorteio + (1 - pSorteio) * (hitRate ?? 0)) : hitRate;
 
-    const simLabel = document.getElementById("simValueLabel");
-    if (simLabel) simLabel.textContent = fmtPct(simPct);
     const combined = document.getElementById("combinedValue");
     if (combined) combined.textContent = pMes === null ? "—" : fmtPct(pMes * 100);
     const bar = document.getElementById("hitBarFill");
@@ -1057,7 +1178,9 @@
     const validRows = rows.filter(r => r.menor_lance_pct !== null);
     const menores = validRows.map(r => r.menor_lance_pct);
     const maioresHist = validRows.map(r => r.maior_lance_pct);
-    const defaultSim = menores.length ? menores[0] : 50;
+    const capPct = maxLancePct(info);
+    const simMax = capPct === null ? 100 : capPct;
+    const defaultSim = Math.min(menores.length ? menores[0] : 50, simMax);
     const minHist = menores.length ? Math.min(...menores) : null;
     const maxHist = maioresHist.length ? Math.max(...maioresHist) : null;
     const total = validRows.length;
@@ -1074,16 +1197,6 @@
         </div>
       </div>
 
-      <div class="disclaimer">
-        <b>Como isso é calculado (estimativa, não garantia):</b> a chance por <b>sorteio</b> assume
-        que cada cota ativa do grupo tem a mesma probabilidade de ser sorteada num mês
-        (1 ÷ cotas ativas). A chance por <b>lance</b> é a taxa histórica de quantas das
-        assembleias coletadas o percentual simulado abaixo teria vencido. Isso não prevê o
-        comportamento de outros consorciados nem garante resultado — é um guia baseado só no
-        histórico recente coletado (${total} assembleia${total === 1 ? "" : "s"} com Lance Livre
-        para este grupo).
-      </div>
-
       <div class="callout-row">
         <div class="callout">
           <div class="label">Chance por sorteio (por mês)</div>
@@ -1096,7 +1209,9 @@
           <div class="note">nas ${total} assembleia${total === 1 ? "" : "s"} coletadas</div>
         </div>
         <div class="callout">
-          <div class="label">Chance combinada no lance simulado</div>
+          <div class="label">Chance combinada no lance simulado
+            <button class="info-btn" id="probInfoBtn" aria-label="Como isso é calculado" type="button">?</button>
+          </div>
           <div class="value num good" id="combinedValue">—</div>
           <div class="note">sorteio + lance, por assembleia</div>
         </div>
@@ -1105,8 +1220,15 @@
       <div class="panel">
         <h3>Simular lance</h3>
         <div class="sim-row">
-          <input type="range" id="simSlider" min="0" max="100" step="0.5" value="${defaultSim}">
-          <span class="sim-value num" id="simValueLabel">${fmtPct(defaultSim)}</span>
+          <input type="range" id="simSlider" min="0" max="${simMax}" step="0.5" value="${defaultSim}">
+          <span class="sim-value">
+            <input type="number" id="simInput" min="0" max="${simMax}" step="0.01" value="${defaultSim.toFixed(2)}">
+            <span class="unit">%</span>
+          </span>
+        </div>
+        <div class="hint" style="color:var(--ink-soft); font-size:11.5px; margin-top:-2px; margin-bottom:10px;">
+          ${capPct === null ? "Sem dados de prazo para calcular o lance máximo permitido." :
+            `Lance máximo permitido: <b style="color:var(--ink);">${fmtPct(capPct)}</b> (prazo restante: ${fmtInt(info.prazo_meses - info.assembleia_corrente + 1)}/${fmtInt(info.prazo_meses)} assembleias)`}
         </div>
         <div class="hit-bar-wrap">
           <div class="hit-bar"><div id="hitBarFill" style="width:0%"></div></div>
@@ -1130,8 +1252,52 @@
 
     updateProbSim(defaultSim);
     const slider = document.getElementById("simSlider");
-    if (slider) slider.addEventListener("input", (e) => updateProbSim(parseFloat(e.target.value)));
+    const numInput = document.getElementById("simInput");
+    if (slider) slider.addEventListener("input", (e) => {
+      const v = parseFloat(e.target.value);
+      if (numInput) numInput.value = v.toFixed(2);
+      updateProbSim(v);
+    });
+    if (numInput) numInput.addEventListener("input", (e) => {
+      const raw = parseFloat(e.target.value);
+      if (isNaN(raw)) return;
+      const v = Math.min(simMax, Math.max(0, raw));
+      if (slider) slider.value = v;
+      updateProbSim(v);
+    });
+    if (numInput) numInput.addEventListener("blur", (e) => {
+      let v = parseFloat(e.target.value);
+      if (isNaN(v)) v = 0;
+      v = Math.min(simMax, Math.max(0, v));
+      e.target.value = v.toFixed(2);
+    });
+
+    const infoBtn = document.getElementById("probInfoBtn");
+    if (infoBtn) infoBtn.addEventListener("click", () => {
+      document.getElementById("probModalText").innerHTML =
+        `A chance por <b>sorteio</b> assume que cada cota ativa do grupo tem a mesma
+        probabilidade de ser sorteada num mês (1 ÷ cotas ativas). A chance por <b>lance</b> é a
+        taxa histórica de quantas das assembleias coletadas o percentual simulado teria vencido.
+        Isso não prevê o comportamento de outros consorciados nem garante resultado — é um guia
+        baseado só no histórico recente coletado (${total} assembleia${total === 1 ? "" : "s"}
+        com Lance Livre para este grupo).`;
+      openProbModal();
+    });
   }
+
+  // ---------------------------------------------------------------
+  // Modal (popup "Como isso é calculado")
+  // ---------------------------------------------------------------
+  const probModalOverlay = document.getElementById("probModalOverlay");
+  function openProbModal() { probModalOverlay.classList.add("open"); }
+  function closeProbModal() { probModalOverlay.classList.remove("open"); }
+  document.getElementById("probModalClose").addEventListener("click", closeProbModal);
+  probModalOverlay.addEventListener("click", (e) => {
+    if (e.target === probModalOverlay) closeProbModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeProbModal();
+  });
 
   // ---------------------------------------------------------------
   // Init
