@@ -278,14 +278,25 @@
   .panel h3 { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
   .panel h3 .range-toggle { font-size: 11px; }
 
+  .section-divider { border: none; border-top: 1px solid var(--line-strong); margin: 28px 0; }
+  .prob-frame > h3 { font-size: 16px; margin-bottom: 18px; }
+  .prob-subsection { margin-top: 22px; padding-top: 22px; border-top: 1px dashed var(--line); }
+  .prob-subsection h4 { font-size: 13.5px; margin-bottom: 12px; color: var(--ink); }
+
   .chart-wrap { width: 100%; overflow-x: auto; }
   .callout-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
   .callout {
     background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-    padding: 13px 15px; box-shadow: var(--shadow);
+    padding: 13px 15px; box-shadow: var(--shadow); min-width: 0; overflow: hidden;
   }
-  .callout .label { font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 5px; }
-  .callout .value { font-size: 22px; font-weight: 700; }
+  .callout .label {
+    font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 5px;
+    display: flex; align-items: center; gap: 2px; white-space: nowrap;
+  }
+  .callout .label .label-text {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; cursor: default;
+  }
+  .callout .value { font-size: 17px; font-weight: 700; white-space: nowrap; overflow: hidden; }
   .callout .value.good { color: var(--good); }
   .callout .value.bad { color: var(--bad); }
   .callout .note { font-size: 11.5px; color: var(--ink-soft); margin-top: 3px; }
@@ -332,13 +343,22 @@
 
   .info-btn {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0;
+    width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0;
     background: var(--accent-soft); color: var(--accent-ink); border: 1px solid var(--accent);
-    font-size: 12px; font-weight: 700; cursor: pointer; margin-left: 5px; padding: 0;
+    font-size: 9px; font-weight: 700; cursor: pointer; margin-left: 4px; padding: 0;
     font-family: "Inter", sans-serif; line-height: 1;
     transition: background .15s ease, color .15s ease;
   }
   .info-btn:hover { background: var(--accent); color: #fff; }
+
+  .label-text[data-tip] { cursor: help; }
+  .hover-tip {
+    position: fixed; z-index: 2000; background: var(--surface); border: 1px solid var(--gold);
+    color: var(--ink); font-size: 11.5px; line-height: 1.45; padding: 7px 11px;
+    border-radius: 8px; box-shadow: var(--shadow); max-width: 240px;
+    pointer-events: none; display: none;
+  }
+  .hover-tip.show { display: block; }
 
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(6, 9, 16, .65);
@@ -357,6 +377,37 @@
     color: var(--ink-soft); font-size: 20px; cursor: pointer; line-height: 1; padding: 2px;
   }
   .modal-close:hover { color: var(--ink); }
+  .export-form { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+  .export-form label { display: flex; flex-direction: column; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--ink-soft); }
+  .export-form input {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 10px; color: var(--ink); font: 500 13px "Inter", sans-serif;
+  }
+  .export-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #exportPrintArea { display: none; }
+  body.exporting-proposal .shell > *:not(#exportPrintArea) { display: none !important; }
+  body.exporting-proposal #exportPrintArea { display: block !important; }
+
+  .export-doc { color: var(--ink); }
+  .export-doc .exp-header {
+    margin-bottom: 22px; border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .export-doc .exp-header h1 { font-size: 21px; margin: 0 0 8px; }
+  .export-doc .exp-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; font-size: 12px; color: var(--ink-soft); }
+  .export-doc .exp-meta b { color: var(--ink); }
+  .export-doc h2 {
+    font-size: 15px; margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line-strong);
+  }
+  .export-doc .exp-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 24px;
+  }
+  .export-doc .exp-row {
+    display: flex; justify-content: space-between; gap: 10px; padding: 7px 0;
+    border-bottom: 1px dashed var(--line); font-size: 12px; break-inside: avoid;
+  }
+  .export-doc .exp-row span:first-child { color: var(--ink-soft); }
+  .export-doc .exp-row b { color: var(--ink); font-weight: 700; white-space: nowrap; }
+  .export-doc footer { margin-top: 26px; font-size: 10.5px; color: var(--ink-soft); }
   .sim-row {
     display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 6px;
   }
@@ -374,6 +425,40 @@
   }
   .sim-value input[type="number"]:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
   .sim-value .unit { font-size: 16px; font-weight: 700; color: var(--gold); }
+
+  .compra-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;
+    margin-bottom: 16px;
+  }
+  .compra-field { display: flex; flex-direction: column; gap: 5px; }
+  .compra-field .lbl { font-size: 11px; font-weight: 600; color: var(--ink-soft); }
+  .compra-field .input-wrap {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 0 8px;
+  }
+  .compra-field .input-wrap:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .compra-field input[type="number"], .compra-field input[type="text"] {
+    flex: 1; min-width: 0; background: none; border: none; color: var(--ink);
+    font: 600 13px "Inter", sans-serif; font-variant-numeric: tabular-nums;
+    padding: 7px 0; -moz-appearance: textfield;
+  }
+  .compra-field input[type="number"]:focus, .compra-field input[type="text"]:focus { outline: none; }
+  .compra-field .unit { font-size: 11.5px; color: var(--ink-soft); font-weight: 600; flex-shrink: 0; }
+  .compra-field select {
+    flex: 1; min-width: 0; background: none; border: none; color: var(--ink);
+    font: 600 13px "Inter", sans-serif; padding: 7px 0; cursor: pointer;
+  }
+  .compra-field select:focus { outline: none; }
+
+  .split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .split-row .panel { margin-bottom: 0; }
+  .compra-panel .callout-row { grid-template-columns: repeat(3, 1fr); }
+  .fin-panel .callout-row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  @media (max-width: 980px) {
+    .split-row { grid-template-columns: 1fr; }
+  }
+
   .horizon-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
   .horizon-cell {
     background: var(--surface-2); border-radius: 10px; padding: 10px 12px; text-align: center;
@@ -399,6 +484,10 @@
     .grupo-layout { grid-template-columns: 1fr; }
     .grupo-picker { max-height: 220px; }
     .callout-row { grid-template-columns: 1fr; }
+    .compra-panel .callout-row, .fin-panel .callout-row { grid-template-columns: 1fr; }
+  }
+  @media (min-width: 761px) and (max-width: 1180px) {
+    .compra-panel .callout-row, .fin-panel .callout-row { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 
@@ -496,10 +585,26 @@
   <div class="modal-overlay" id="probModalOverlay">
     <div class="modal-box">
       <button class="modal-close" id="probModalClose" aria-label="Fechar">&times;</button>
-      <h4>Como isso é calculado (estimativa, não garantia)</h4>
+      <h4 id="probModalTitle">Como isso é calculado</h4>
       <p id="probModalText"></p>
     </div>
   </div>
+
+  <div class="modal-overlay" id="exportModalOverlay">
+    <div class="modal-box">
+      <button class="modal-close" id="exportModalClose" aria-label="Fechar">&times;</button>
+      <h4>Exportar proposta em PDF</h4>
+      <div class="export-form">
+        <label>Nome do cliente<input type="text" id="expClienteNome" placeholder="Opcional"></label>
+        <label>Nome do vendedor<input type="text" id="expVendedorNome" placeholder="Opcional"></label>
+        <label>Telefone do vendedor<input type="text" id="expVendedorTel" placeholder="Opcional"></label>
+        <label>Email do vendedor<input type="email" id="expVendedorEmail" placeholder="Opcional"></label>
+      </div>
+      <button class="btn pdf" id="expGerarBtn" style="margin-top:6px; width:100%;" type="button">Gerar PDF</button>
+    </div>
+  </div>
+
+  <div id="exportPrintArea"></div>
 
   <footer class="note">
     Metodologia: <b>maior/menor lance</b> considera apenas a modalidade Lance Livre (sorteio e lance
@@ -522,6 +627,67 @@
   const fmtBRL = (v) => (v === null || v === undefined) ? "—" :
     "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
+  // Versão abreviada (M para milhão, Mil para milhar) — usada só quando o valor não
+  // cabe no card (ver shrinkOverflowingValues). O texto completo fica no title/data-tip.
+  const fmtBRLCompact = (v) => {
+    if (v === null || v === undefined) return "—";
+    const sign = v < 0 ? "-" : "";
+    const abs = Math.abs(v);
+    if (abs >= 1000000) {
+      return sign + "R$ " + (abs / 1000000).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
+    }
+    if (abs >= 1000) {
+      return sign + "R$ " + (abs / 1000).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + " Mil";
+    }
+    return fmtBRL(v);
+  };
+  const parseBRLDisplay = (str) => {
+    if (!str) return null;
+    const neg = str.indexOf("-") !== -1;
+    const digits = str.replace(/[^\d]/g, "");
+    if (!digits) return null;
+    return (neg ? -1 : 1) * parseInt(digits, 10);
+  };
+  // Depois de renderizar valores em R$ por extenso, abrevia (M/Mil) só os que não
+  // couberem na largura do card — o valor completo continua acessível via hover.
+  function shrinkOverflowingValues(container) {
+    if (!container) return;
+    container.querySelectorAll(".callout .value").forEach((el) => {
+      const full = el.textContent;
+      const num = parseBRLDisplay(full);
+      if (num === null) return;
+      if (el.scrollWidth > el.clientWidth + 1) {
+        el.textContent = fmtBRLCompact(num);
+        el.title = full;
+      } else {
+        el.removeAttribute("title");
+      }
+    });
+  }
+
+  // Taxa total (administração + fundo de reserva) usada em toda a Simulação de compra —
+  // fixa por instrução do Edval, não editável no painel.
+  const TAXA_TOTAL_PCT = 25;
+
+  // Máscara de moeda (R$ 1.234.567,89) para o campo Valor do crédito — digita-se da direita
+  // pra esquerda, como calculadora/maquininha, para nunca gerar um valor mal formatado.
+  function parseBRL(str) {
+    if (!str) return 0;
+    const digits = String(str).replace(/\D/g, "");
+    return digits ? parseInt(digits, 10) / 100 : 0;
+  }
+  function formatBRLInputValue(digitsStr) {
+    const digits = (digitsStr || "").replace(/\D/g, "") || "0";
+    const cents = parseInt(digits, 10);
+    return (cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function attachCurrencyMask(el) {
+    if (!el) return;
+    el.addEventListener("input", () => {
+      el.value = formatBRLInputValue(el.value);
+    });
+  }
+
   // Exporta a visão atual (já filtrada) como PDF via impressão do navegador.
   // O título da aba vira o nome sugerido do arquivo no diálogo "Salvar como PDF".
   function exportPdf() {
@@ -532,6 +698,106 @@
     const originalTitle = document.title;
     document.title = `resultados${dd}${mm}${yyyy}`;
     const restore = () => { document.title = originalTitle; };
+    window.addEventListener("afterprint", restore, { once: true });
+    window.print();
+  }
+
+  // Proposta em PDF (grupo + cliente + vendedor) — Consórcio, Financiamento e
+  // Probabilidade de contemplação num documento único, gerado via impressão.
+  function fullVal(el) {
+    if (!el) return "—";
+    return el.title || el.textContent || "—";
+  }
+
+  function buildExportDoc(codigo, cliente, vendedorNome, vendedorTel, vendedorEmail) {
+    const info = grupoInfo[codigo];
+    const today = new Date().toLocaleDateString("pt-BR");
+    const row = (lbl, val) => `<div class="exp-row"><span>${lbl}</span><b>${val}</b></div>`;
+
+    const consorcioRows = [
+      row("Valor do crédito", "R$ " + (document.getElementById("simCredito").value || "0")),
+      row("Percentual de lance", (document.getElementById("simLancePct").value || "0") + "%"),
+      row("Lance embutido", (document.getElementById("simEmbutidoPct").value || "0") + "%"),
+      row("Parcelas pagas", document.getElementById("simParcelasPagas").value || "0"),
+      row("Parcela na contratação", fullVal(document.getElementById("compraParcelaContratacao"))),
+      row("Parcela pós-contemplação", fullVal(document.getElementById("compraParcelaPos"))),
+      row("Crédito líquido", fullVal(document.getElementById("compraCreditoLiquido"))),
+      row("Valor do lance total", fullVal(document.getElementById("compraLanceTotal"))),
+      row("Lance com recursos próprios", fullVal(document.getElementById("compraLanceProprio"))),
+      row("Lance embutido (R$)", fullVal(document.getElementById("compraLanceEmbutido"))),
+      row("Valor total pago no consórcio", fullVal(document.getElementById("compraTotalPago"))),
+    ].join("");
+
+    const finRowsArr = [
+      row("Tabela", document.getElementById("finSistema").value),
+      row("Taxa de juros (ao ano)", (document.getElementById("finTaxaAnual").value || "0") + "%"),
+      row("Prazo", (document.getElementById("finPrazoMeses").value || "0") + " meses"),
+      row("Valor do imóvel", fullVal(document.getElementById("finValorImovel"))),
+      row("Valor da entrada", fullVal(document.getElementById("finValorEntrada"))),
+    ];
+    document.querySelectorAll("#finParcelaRow .callout").forEach((c) => {
+      const lbl = c.querySelector(".label-text");
+      const val = c.querySelector(".value");
+      if (lbl && val) finRowsArr.push(row(lbl.textContent, fullVal(val)));
+    });
+    finRowsArr.push(row("Valor total pago no financiamento", fullVal(document.getElementById("finTotalPago"))));
+    const finRows = finRowsArr.join("");
+
+    const probRows = [
+      row("Chance por sorteio (por mês)", fullVal(document.getElementById("probChanceSorteio"))),
+      row("Faixa histórica do menor lance", fullVal(document.getElementById("probFaixaHistorica"))),
+      row("Lance simulado", (document.getElementById("simInput").value || "0") + "%"),
+      row("Chance combinada no lance simulado", fullVal(document.getElementById("combinedValue"))),
+      row("Chance em 1 assembleia", fullVal(document.getElementById("horizon-1"))),
+      row("Chance em 3 assembleias", fullVal(document.getElementById("horizon-3"))),
+      row("Chance em 6 assembleias", fullVal(document.getElementById("horizon-6"))),
+      row("Chance em 12 assembleias", fullVal(document.getElementById("horizon-12"))),
+    ].join("");
+
+    const metaParts = [];
+    if (cliente) metaParts.push(`<div>Cliente: <b>${cliente}</b></div>`);
+    const vendedorParts = [vendedorNome, vendedorTel, vendedorEmail].filter(Boolean);
+    if (vendedorParts.length) metaParts.push(`<div>Vendedor: <b>${vendedorParts.join(" · ")}</b></div>`);
+    metaParts.push(`<div>Data: <b>${today}</b></div>`);
+
+    return `
+      <div class="export-doc">
+        <div class="exp-header">
+          <h1>Proposta de Simulação — Grupo ${codigo.replace(/^0+/, "")}</h1>
+          <div class="exp-meta">${metaParts.join("")}</div>
+          <div class="exp-meta" style="margin-top:6px;">
+            <div>${info.categoria || ""} · ${fmtBRL(info.valor_bem_menor)} – ${fmtBRL(info.valor_bem_maior)}</div>
+            <div>Prazo total: <b>${fmtInt(info.prazo_meses)} meses</b></div>
+          </div>
+        </div>
+
+        <h2>Consórcio</h2>
+        <div class="exp-grid">${consorcioRows}</div>
+
+        <h2>Financiamento</h2>
+        <div class="exp-grid">${finRows}</div>
+
+        <h2>Probabilidade de contemplação</h2>
+        <div class="exp-grid">${probRows}</div>
+
+        <footer>Simulação gerada em ${today} pelo painel de assembleias CNP Consórcio — valores estimados, sem garantia de resultado.</footer>
+      </div>
+    `;
+  }
+
+  function exportPropostaPdf(codigo, cliente) {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const yyyy = today.getFullYear();
+    const originalTitle = document.title;
+    const slug = (s) => s ? "_" + s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "") : "";
+    document.title = `proposta_grupo${codigo.replace(/^0+/, "")}${slug(cliente)}_${dd}${mm}${yyyy}`;
+    document.body.classList.add("exporting-proposal");
+    const restore = () => {
+      document.title = originalTitle;
+      document.body.classList.remove("exporting-proposal");
+    };
     window.addEventListener("afterprint", restore, { once: true });
     window.print();
   }
@@ -1171,6 +1437,132 @@
     });
   }
 
+  // Simulação de compra: parcela na contratação, parcela pós-lance, valores do lance
+  // (total / embutido / recursos próprios) e crédito líquido. Ver
+  // [[feedback-cnp-assembleia-calc-rules]] para as regras confirmadas com o Edval.
+  function updateCompraSim(lancePctOverride) {
+    const info = grupoInfo[currentProbGrupo];
+    const el = (id) => document.getElementById(id);
+    const num = (id) => parseFloat(el(id) && el(id).value) || 0;
+    if (!el("simCredito")) return;
+
+    const credito = parseBRL(el("simCredito") && el("simCredito").value);
+    const lancePct = lancePctOverride !== undefined ? lancePctOverride : num("simLancePct");
+    const embutidoPct = num("simEmbutidoPct");
+    const parcelasPagas = Math.max(0, Math.round(num("simParcelasPagas")));
+
+    const prazoRestanteAtual = (info.prazo_meses && info.assembleia_corrente)
+      ? Math.max(info.prazo_meses - info.assembleia_corrente, 1) : (info.prazo_meses || 1);
+
+    const saldoDevedorTotal = credito * (1 + TAXA_TOTAL_PCT / 100);
+    const parcelaContratacao = prazoRestanteAtual > 0 ? saldoDevedorTotal / prazoRestanteAtual : null;
+
+    const valorLanceTotal = credito * lancePct / 100;
+    const valorLanceEmbutido = credito * embutidoPct / 100;
+    const valorLanceProprio = valorLanceTotal - valorLanceEmbutido;
+    const creditoLiquido = credito - valorLanceEmbutido;
+
+    // "parcelas pagas" = parcelas regulares já pagas; some-se +1 pela parcela de
+    // adesão (a primeira), que é descontada à parte por instrução do Edval.
+    const valoresPagos = parcelaContratacao !== null ? parcelaContratacao * (parcelasPagas + 1) : 0;
+    const novoSaldo = saldoDevedorTotal - valorLanceTotal - valoresPagos;
+    const novoPrazoRemanescente = prazoRestanteAtual - parcelasPagas - 1;
+    const parcelaPos = (novoPrazoRemanescente > 0 && novoSaldo > 0) ? novoSaldo / novoPrazoRemanescente : null;
+
+    const set = (id, text) => { const e = el(id); if (e) e.textContent = text; };
+    set("compraParcelaContratacao", parcelaContratacao === null ? "—" : fmtBRL(parcelaContratacao));
+    set("compraLanceTotal", fmtBRL(valorLanceTotal));
+    set("compraLanceProprio", fmtBRL(valorLanceProprio));
+    set("compraLanceEmbutido", fmtBRL(valorLanceEmbutido));
+    set("compraCreditoLiquido", fmtBRL(creditoLiquido));
+
+    const posLbl = el("compraParcelaPosLbl");
+    if (parcelaPos === null) {
+      set("compraParcelaPos", "—");
+      if (posLbl) posLbl.dataset.tip = novoPrazoRemanescente <= 0
+        ? "prazo remanescente esgotado com essas parcelas pagas"
+        : "saldo devedor após lance e parcelas pagas";
+    } else {
+      set("compraParcelaPos", fmtBRL(parcelaPos));
+      if (posLbl) posLbl.dataset.tip = `saldo ${fmtBRL(novoSaldo)} ÷ ${fmtInt(novoPrazoRemanescente)} assemb. restantes`;
+    }
+
+    // Total pago no consórcio: o que sai do bolso (parcelas + recursos próprios do lance)
+    // mais o que ainda falta pagar (novoSaldo, a valor de hoje) — não conta o embutido como
+    // "pago", já que ele só reduz o crédito recebido, não sai do bolso do comprador.
+    const totalPagoConsorcio = valoresPagos + valorLanceProprio + Math.max(novoSaldo, 0);
+    set("compraTotalPago", fmtBRL(totalPagoConsorcio));
+
+    // Alimenta o simulador de financiamento ao lado, que depende do crédito líquido
+    // e do lance com recursos próprios calculados aqui.
+    compraState.creditoLiquido = creditoLiquido;
+    compraState.lanceProprio = valorLanceProprio;
+    updateFinSim();
+
+    requestAnimationFrame(() => shrinkOverflowingValues(document.querySelector(".compra-panel")));
+  }
+
+  // Simulador de financiamento (SAC/PRICE) — usa o crédito líquido e o lance com
+  // recursos próprios da Simulação de compra ao lado como valor do imóvel/entrada.
+  const compraState = { creditoLiquido: 0, lanceProprio: 0 };
+  function updateFinSim() {
+    const el = (id) => document.getElementById(id);
+    if (!el("finSistema")) return;
+
+    const sistema = el("finSistema").value;
+    const taxaAnual = parseFloat(el("finTaxaAnual").value) || 0;
+    const prazo = Math.max(1, Math.round(parseFloat(el("finPrazoMeses").value) || 0));
+
+    const valorImovel = compraState.creditoLiquido;
+    const valorEntrada = compraState.lanceProprio;
+    const valorFinanciado = Math.max(valorImovel - valorEntrada, 0);
+    const taxaMensal = Math.pow(1 + taxaAnual / 100, 1 / 12) - 1;
+
+    const set = (id, text) => { const e = el(id); if (e) e.textContent = text; };
+    set("finValorImovel", fmtBRL(valorImovel));
+    set("finValorEntrada", fmtBRL(valorEntrada));
+    set("finValorFinanciado", fmtBRL(valorFinanciado));
+
+    const row = el("finParcelaRow");
+    if (!row) return;
+
+    const valorFinanciadoCell = `
+        <div class="callout">
+          <div class="label"><span class="label-text" data-tip="Valor financiado">Valor financiado</span></div>
+          <div class="value num">${fmtBRL(valorFinanciado)}</div>
+        </div>`;
+
+    let totalPago;
+    if (sistema === "SAC") {
+      const amortizacao = valorFinanciado / prazo;
+      const parcelaInicial = amortizacao + valorFinanciado * taxaMensal;
+      const parcelaFinal = amortizacao + amortizacao * taxaMensal;
+      totalPago = prazo * (parcelaInicial + parcelaFinal) / 2;
+      row.innerHTML = valorFinanciadoCell + `
+        <div class="callout">
+          <div class="label"><span class="label-text" data-tip="Parcela inicial (SAC)">Parcela inicial (SAC)</span></div>
+          <div class="value num good">${fmtBRL(parcelaInicial)}</div>
+        </div>
+        <div class="callout">
+          <div class="label"><span class="label-text" data-tip="Parcela final (SAC)">Parcela final (SAC)</span></div>
+          <div class="value num">${fmtBRL(parcelaFinal)}</div>
+        </div>`;
+    } else {
+      const parcela = taxaMensal > 0
+        ? valorFinanciado * (taxaMensal * Math.pow(1 + taxaMensal, prazo)) / (Math.pow(1 + taxaMensal, prazo) - 1)
+        : valorFinanciado / prazo;
+      totalPago = parcela * prazo;
+      row.innerHTML = valorFinanciadoCell + `
+        <div class="callout">
+          <div class="label"><span class="label-text" data-tip="Valor da parcela (PRICE)">Valor da parcela (PRICE)</span></div>
+          <div class="value num good">${fmtBRL(parcela)}</div>
+        </div>`;
+    }
+    set("finTotalPago", fmtBRL(totalPago));
+
+    requestAnimationFrame(() => shrinkOverflowingValues(document.querySelector(".fin-panel")));
+  }
+
   function renderProbDetail() {
     const codigo = currentProbGrupo;
     const rows = byGrupo[codigo] || [];
@@ -1188,82 +1580,197 @@
     const pSorteio = cotasAtivas > 0 ? 1 / cotasAtivas : null;
     const assembleiasRestantes = (info.prazo_meses && info.assembleia_corrente)
       ? Math.max(info.prazo_meses - info.assembleia_corrente, 0) : null;
+    const prazoRestanteAtual = Math.max(assembleiasRestantes || info.prazo_meses || 1, 1);
+    const defaultCredito = info.valor_bem_menor || 0;
 
     document.getElementById("probDetail").innerHTML = `
       <div class="detail-head">
         <div>
-          <h2>Grupo ${codigo.replace(/^0+/, "")}</h2>
+          <h2>Grupo ${codigo.replace(/^0+/, "")}
+            <button class="btn pdf" id="exportPropostaBtn" style="font-size:11.5px; padding:6px 14px; vertical-align:middle; margin-left:10px;" type="button">Exportar</button>
+          </h2>
           <div class="credito">${fmtInt(cotasAtivas)} cotas ativas · ${fmtInt(info.vagas_nao_utilizadas)} vagas no grupo${assembleiasRestantes === null ? "" : ` · ${assembleiasRestantes} assembleias até o fim do prazo`}</div>
         </div>
       </div>
 
-      <div class="callout-row">
-        <div class="callout">
-          <div class="label">Chance por sorteio (por mês)</div>
-          <div class="value num">${pSorteio === null ? "—" : fmtPct(pSorteio * 100)}</div>
-          <div class="note">1 ÷ ${fmtInt(cotasAtivas)} cotas ativas</div>
-        </div>
-        <div class="callout">
-          <div class="label">Faixa histórica do menor lance</div>
-          <div class="value num">${minHist === null ? "—" : fmtPct(minHist) + " – " + fmtPct(maxHist)}</div>
-          <div class="note">nas ${total} assembleia${total === 1 ? "" : "s"} coletadas</div>
-        </div>
-        <div class="callout">
-          <div class="label">Chance combinada no lance simulado
-            <button class="info-btn" id="probInfoBtn" aria-label="Como isso é calculado" type="button">?</button>
+      <div class="split-row">
+      <div class="panel compra-panel">
+        <h3>Consórcio</h3>
+        <div class="compra-grid">
+          <div class="compra-field">
+            <span class="lbl">Valor do crédito</span>
+            <div class="input-wrap"><span class="unit">R$</span><input type="text" inputmode="decimal" id="simCredito" value="${defaultCredito.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}"></div>
           </div>
-          <div class="value num good" id="combinedValue">—</div>
-          <div class="note">sorteio + lance, por assembleia</div>
+          <div class="compra-field">
+            <span class="lbl">Percentual de lance</span>
+            <div class="input-wrap"><input type="number" id="simLancePct" min="0" max="${simMax}" step="0.01" value="${defaultSim.toFixed(2)}"><span class="unit">%</span></div>
+          </div>
+          <div class="compra-field">
+            <span class="lbl">Lance embutido</span>
+            <div class="input-wrap"><input type="number" id="simEmbutidoPct" min="0" step="0.01" value="0"><span class="unit">%</span></div>
+          </div>
+          <div class="compra-field">
+            <span class="lbl">Parcelas pagas</span>
+            <div class="input-wrap"><input type="number" id="simParcelasPagas" min="0" step="1" value="0"></div>
+          </div>
+        </div>
+
+        <div class="callout-row">
+          <div class="callout">
+            <div class="label"><span class="label-text" id="compraParcelaContratacaoLbl" title="crédito + ${TAXA_TOTAL_PCT}% de taxas ÷ prazo restante atual (${fmtInt(prazoRestanteAtual)} assemb.)">Parcela na contratação</span></div>
+            <div class="value num" id="compraParcelaContratacao">—</div>
+          </div>
+          <div class="callout">
+            <div class="label"><span class="label-text" id="compraParcelaPosLbl" title="saldo devedor após lance e parcelas pagas">Parcela pós-contemplação</span></div>
+            <div class="value num good" id="compraParcelaPos">—</div>
+          </div>
+          <div class="callout">
+            <div class="label"><span class="label-text" data-tip="crédito − parte embutida no lance">Crédito líquido</span></div>
+            <div class="value num" id="compraCreditoLiquido">—</div>
+          </div>
+        </div>
+        <div class="callout-row" style="margin-top:12px;">
+          <div class="callout">
+            <div class="label"><span class="label-text" data-tip="percentual de lance × crédito">Valor do lance total</span></div>
+            <div class="value num" id="compraLanceTotal">—</div>
+          </div>
+          <div class="callout">
+            <div class="label"><span class="label-text" data-tip="lance total − embutido">Lance com recursos próprios</span></div>
+            <div class="value num good" id="compraLanceProprio">—</div>
+          </div>
+          <div class="callout">
+            <div class="label"><span class="label-text" data-tip="abatido direto do crédito">Lance embutido</span></div>
+            <div class="value num" id="compraLanceEmbutido">—</div>
+          </div>
+        </div>
+        <div class="callout-row" style="margin-top:12px;">
+          <div class="callout" style="grid-column: 1 / -1;">
+            <div class="label"><span class="label-text" data-tip="valores pagos + lance + saldo restante — o total que sai do bolso mais o embutido, até quitar">Valor total pago no consórcio</span></div>
+            <div class="value num" id="compraTotalPago">—</div>
+          </div>
         </div>
       </div>
 
-      <div class="panel">
-        <h3>Simular lance</h3>
-        <div class="sim-row">
-          <input type="range" id="simSlider" min="0" max="${simMax}" step="0.5" value="${defaultSim}">
-          <span class="sim-value">
-            <input type="number" id="simInput" min="0" max="${simMax}" step="0.01" value="${defaultSim.toFixed(2)}">
-            <span class="unit">%</span>
-          </span>
-        </div>
-        <div class="hint" style="color:var(--ink-soft); font-size:11.5px; margin-top:-2px; margin-bottom:10px;">
-          ${capPct === null ? "Sem dados de prazo para calcular o lance máximo permitido." :
-            `Lance máximo permitido: <b style="color:var(--ink);">${fmtPct(capPct)}</b> (prazo restante: ${fmtInt(info.prazo_meses - info.assembleia_corrente + 1)}/${fmtInt(info.prazo_meses)} assembleias)`}
-        </div>
-        <div class="hit-bar-wrap">
-          <div class="hit-bar"><div id="hitBarFill" style="width:0%"></div></div>
-          <span class="num" id="hitBarText" style="font-size:12px; color:var(--ink-soft); white-space:nowrap;">—</span>
+      <div class="panel fin-panel">
+        <h3>Financiamento</h3>
+        <div class="compra-grid">
+          <div class="compra-field">
+            <span class="lbl">Tabela</span>
+            <div class="input-wrap">
+              <select id="finSistema">
+                <option value="PRICE">PRICE</option>
+                <option value="SAC">SAC</option>
+              </select>
+            </div>
+          </div>
+          <div class="compra-field">
+            <span class="lbl">Tx ao Ano</span>
+            <div class="input-wrap"><input type="number" id="finTaxaAnual" min="0" step="0.01" value="10"><span class="unit">%</span></div>
+          </div>
+          <div class="compra-field">
+            <span class="lbl">Prazo</span>
+            <div class="input-wrap"><input type="number" id="finPrazoMeses" min="1" step="1" value="360"><span class="unit">meses</span></div>
+          </div>
         </div>
 
-        <div class="horizon-row">
-          <div class="horizon-cell"><div class="h-label">em 1 assemb.</div><div class="h-value num" id="horizon-1">—</div></div>
-          <div class="horizon-cell"><div class="h-label">em 3 assemb.</div><div class="h-value num" id="horizon-3">—</div></div>
-          <div class="horizon-cell"><div class="h-label">em 6 assemb.</div><div class="h-value num" id="horizon-6">—</div></div>
-          <div class="horizon-cell"><div class="h-label">em 12 assemb.</div><div class="h-value num" id="horizon-12">—</div></div>
+        <div class="callout-row">
+          <div class="callout">
+            <div class="label"><span class="label-text" data-tip="Valor do imóvel">Valor do imóvel</span></div>
+            <div class="value num" id="finValorImovel">—</div>
+          </div>
+          <div class="callout">
+            <div class="label"><span class="label-text" data-tip="Valor da entrada">Valor da entrada</span></div>
+            <div class="value num" id="finValorEntrada">—</div>
+          </div>
+        </div>
+        <div class="callout-row" id="finParcelaRow" style="margin-top:12px;"></div>
+        <div class="callout-row" style="margin-top:12px; grid-template-columns: 1fr;">
+          <div class="callout">
+            <div class="label"><span class="label-text" data-tip="Valor total pago no financiamento">Valor total pago no financiamento</span></div>
+            <div class="value num" id="finTotalPago">—</div>
+          </div>
         </div>
       </div>
+      </div>
 
-      ${rows.length ? `
-      <div class="panel">
-        <h3>Evolução do menor lance (base da estimativa)</h3>
-        <div class="chart-wrap">${lineChart(rows.slice(0, 6), 640, 170)}</div>
-      </div>` : ""}
+      <hr class="section-divider">
+
+      <div class="panel prob-frame">
+        <h3>Probabilidade de contemplação</h3>
+        <div class="callout-row">
+          <div class="callout">
+            <div class="label">Chance por sorteio (por mês)</div>
+            <div class="value num" id="probChanceSorteio">${pSorteio === null ? "—" : fmtPct(pSorteio * 100)}</div>
+            <div class="note">1 ÷ ${fmtInt(cotasAtivas)} cotas ativas</div>
+          </div>
+          <div class="callout">
+            <div class="label">Faixa histórica do menor lance</div>
+            <div class="value num" id="probFaixaHistorica">${minHist === null ? "—" : fmtPct(minHist) + " – " + fmtPct(maxHist)}</div>
+            <div class="note">nas ${total} assembleia${total === 1 ? "" : "s"} coletadas</div>
+          </div>
+          <div class="callout">
+            <div class="label">Chance combinada no lance simulado
+              <button class="info-btn" id="probInfoBtn" aria-label="Como isso é calculado" type="button">?</button>
+            </div>
+            <div class="value num good" id="combinedValue">—</div>
+            <div class="note">sorteio + lance, por assembleia</div>
+          </div>
+        </div>
+
+        <div class="prob-subsection">
+          <h4>Simular lance</h4>
+          <div class="sim-row">
+            <input type="range" id="simSlider" min="0" max="${simMax}" step="0.5" value="${defaultSim}">
+            <span class="sim-value">
+              <input type="number" id="simInput" min="0" max="${simMax}" step="0.01" value="${defaultSim.toFixed(2)}">
+              <span class="unit">%</span>
+            </span>
+          </div>
+          <div class="hint" style="color:var(--ink-soft); font-size:11.5px; margin-top:-2px; margin-bottom:10px;">
+            ${capPct === null ? "Sem dados de prazo para calcular o lance máximo permitido." :
+              `Lance máximo permitido: <b style="color:var(--ink);">${fmtPct(capPct)}</b> (prazo restante: ${fmtInt(info.prazo_meses - info.assembleia_corrente + 1)}/${fmtInt(info.prazo_meses)} assembleias)`}
+          </div>
+          <div class="hit-bar-wrap">
+            <div class="hit-bar"><div id="hitBarFill" style="width:0%"></div></div>
+            <span class="num" id="hitBarText" style="font-size:12px; color:var(--ink-soft); white-space:nowrap;">—</span>
+          </div>
+
+          <div class="horizon-row">
+            <div class="horizon-cell"><div class="h-label">em 1 assemb.</div><div class="h-value num" id="horizon-1">—</div></div>
+            <div class="horizon-cell"><div class="h-label">em 3 assemb.</div><div class="h-value num" id="horizon-3">—</div></div>
+            <div class="horizon-cell"><div class="h-label">em 6 assemb.</div><div class="h-value num" id="horizon-6">—</div></div>
+            <div class="horizon-cell"><div class="h-label">em 12 assemb.</div><div class="h-value num" id="horizon-12">—</div></div>
+          </div>
+        </div>
+
+        ${rows.length ? `
+        <div class="prob-subsection">
+          <h4>Evolução do menor lance (base da estimativa)</h4>
+          <div class="chart-wrap">${lineChart(rows.slice(0, 6), 640, 170)}</div>
+        </div>` : ""}
+      </div>
     `;
 
     updateProbSim(defaultSim);
+    updateCompraSim();
     const slider = document.getElementById("simSlider");
     const numInput = document.getElementById("simInput");
-    if (slider) slider.addEventListener("input", (e) => {
-      const v = parseFloat(e.target.value);
-      if (numInput) numInput.value = v.toFixed(2);
-      updateProbSim(v);
-    });
+    const lanceInput = document.getElementById("simLancePct");
+    // Percentual de lance é compartilhado entre a simulação de compra e a probabilidade —
+    // os três controles (slider, simInput, simLancePct) ficam sempre sincronizados.
+    function syncLancePct(v, sourceEl) {
+      const clamped = Math.min(simMax, Math.max(0, v));
+      if (slider && slider !== sourceEl) slider.value = clamped;
+      if (numInput && numInput !== sourceEl) numInput.value = clamped.toFixed(2);
+      if (lanceInput && lanceInput !== sourceEl) lanceInput.value = clamped.toFixed(2);
+      updateProbSim(clamped);
+      updateCompraSim(clamped);
+    }
+    if (slider) slider.addEventListener("input", (e) => syncLancePct(parseFloat(e.target.value), e.target));
     if (numInput) numInput.addEventListener("input", (e) => {
       const raw = parseFloat(e.target.value);
       if (isNaN(raw)) return;
-      const v = Math.min(simMax, Math.max(0, raw));
-      if (slider) slider.value = v;
-      updateProbSim(v);
+      syncLancePct(raw, e.target);
     });
     if (numInput) numInput.addEventListener("blur", (e) => {
       let v = parseFloat(e.target.value);
@@ -1271,32 +1778,132 @@
       v = Math.min(simMax, Math.max(0, v));
       e.target.value = v.toFixed(2);
     });
+    if (lanceInput) lanceInput.addEventListener("input", (e) => {
+      const raw = parseFloat(e.target.value);
+      if (isNaN(raw)) return;
+      syncLancePct(raw, e.target);
+    });
+    if (lanceInput) lanceInput.addEventListener("blur", (e) => {
+      let v = parseFloat(e.target.value);
+      if (isNaN(v)) v = 0;
+      v = Math.min(simMax, Math.max(0, v));
+      e.target.value = v.toFixed(2);
+    });
+
+    attachCurrencyMask(document.getElementById("simCredito"));
+    ["simCredito", "simEmbutidoPct", "simParcelasPagas"].forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.addEventListener("input", () => updateCompraSim());
+    });
+
+    ["finSistema", "finTaxaAnual", "finPrazoMeses"].forEach(id => {
+      const field = document.getElementById(id);
+      if (!field) return;
+      field.addEventListener(id === "finSistema" ? "change" : "input", () => updateFinSim());
+    });
 
     const infoBtn = document.getElementById("probInfoBtn");
     if (infoBtn) infoBtn.addEventListener("click", () => {
-      document.getElementById("probModalText").innerHTML =
+      openProbModal("Como isso é calculado (estimativa, não garantia)",
         `A chance por <b>sorteio</b> assume que cada cota ativa do grupo tem a mesma
         probabilidade de ser sorteada num mês (1 ÷ cotas ativas). A chance por <b>lance</b> é a
         taxa histórica de quantas das assembleias coletadas o percentual simulado teria vencido.
         Isso não prevê o comportamento de outros consorciados nem garante resultado — é um guia
         baseado só no histórico recente coletado (${total} assembleia${total === 1 ? "" : "s"}
-        com Lance Livre para este grupo).`;
-      openProbModal();
+        com Lance Livre para este grupo).`);
     });
+
+    const exportBtn = document.getElementById("exportPropostaBtn");
+    if (exportBtn) exportBtn.addEventListener("click", openExportModal);
   }
 
   // ---------------------------------------------------------------
   // Modal (popup "Como isso é calculado")
   // ---------------------------------------------------------------
   const probModalOverlay = document.getElementById("probModalOverlay");
-  function openProbModal() { probModalOverlay.classList.add("open"); }
+  function openProbModal(title, html) {
+    if (title !== undefined) document.getElementById("probModalTitle").textContent = title;
+    if (html !== undefined) document.getElementById("probModalText").innerHTML = html;
+    probModalOverlay.classList.add("open");
+  }
   function closeProbModal() { probModalOverlay.classList.remove("open"); }
   document.getElementById("probModalClose").addEventListener("click", closeProbModal);
   probModalOverlay.addEventListener("click", (e) => {
     if (e.target === probModalOverlay) closeProbModal();
   });
+
+  // ---------------------------------------------------------------
+  // Modal "Exportar proposta em PDF" (cliente/vendedor) — o botão que abre
+  // este modal fica dentro do cabeçalho do grupo, recriado a cada
+  // renderProbDetail(); o modal em si e este wiring são globais/únicos.
+  // ---------------------------------------------------------------
+  const exportModalOverlay = document.getElementById("exportModalOverlay");
+  const VENDEDOR_STORAGE_KEY = "cnp_vendedor_info_v1";
+  function openExportModal() {
+    document.getElementById("expClienteNome").value = "";
+    try {
+      const saved = JSON.parse(localStorage.getItem(VENDEDOR_STORAGE_KEY) || "{}");
+      document.getElementById("expVendedorNome").value = saved.nome || "";
+      document.getElementById("expVendedorTel").value = saved.tel || "";
+      document.getElementById("expVendedorEmail").value = saved.email || "";
+    } catch (e) { /* localStorage indisponível — segue com campos em branco */ }
+    exportModalOverlay.classList.add("open");
+  }
+  function closeExportModal() { exportModalOverlay.classList.remove("open"); }
+  document.getElementById("exportModalClose").addEventListener("click", closeExportModal);
+  exportModalOverlay.addEventListener("click", (e) => {
+    if (e.target === exportModalOverlay) closeExportModal();
+  });
+  document.getElementById("expGerarBtn").addEventListener("click", () => {
+    const cliente = document.getElementById("expClienteNome").value.trim();
+    const vendedorNome = document.getElementById("expVendedorNome").value.trim();
+    const vendedorTel = document.getElementById("expVendedorTel").value.trim();
+    const vendedorEmail = document.getElementById("expVendedorEmail").value.trim();
+    try {
+      localStorage.setItem(VENDEDOR_STORAGE_KEY, JSON.stringify({ nome: vendedorNome, tel: vendedorTel, email: vendedorEmail }));
+    } catch (e) { /* localStorage indisponível — segue sem lembrar pra próxima vez */ }
+    closeExportModal();
+    document.getElementById("exportPrintArea").innerHTML = buildExportDoc(currentProbGrupo, cliente, vendedorNome, vendedorTel, vendedorEmail);
+    exportPropostaPdf(currentProbGrupo, cliente);
+  });
+
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeProbModal();
+    if (e.key === "Escape") { closeProbModal(); closeExportModal(); }
+  });
+
+  // ---------------------------------------------------------------
+  // Popup ao passar o mouse sobre o título de um card (Simulação de compra /
+  // Simulador de financiamento) — substitui o antigo botão "?"/modal por algo
+  // instantâneo, sem depender do tooltip nativo do navegador (que é lento e
+  // inconsistente entre sistemas).
+  // ---------------------------------------------------------------
+  const hoverTip = document.createElement("div");
+  hoverTip.className = "hover-tip";
+  document.body.appendChild(hoverTip);
+  function positionHoverTip(e) {
+    const pad = 14;
+    const maxX = window.innerWidth - hoverTip.offsetWidth - 8;
+    const maxY = window.innerHeight - hoverTip.offsetHeight - 8;
+    hoverTip.style.left = Math.min(e.clientX + pad, Math.max(8, maxX)) + "px";
+    hoverTip.style.top = Math.min(e.clientY + pad, Math.max(8, maxY)) + "px";
+  }
+  document.addEventListener("mouseover", (e) => {
+    const el = e.target.closest(".label-text[data-tip]");
+    if (!el) return;
+    hoverTip.textContent = el.dataset.tip;
+    hoverTip.classList.add("show");
+    positionHoverTip(e);
+  });
+  document.addEventListener("mousemove", (e) => {
+    if (hoverTip.classList.contains("show")) positionHoverTip(e);
+  });
+  document.addEventListener("mouseout", (e) => {
+    const el = e.target.closest(".label-text[data-tip]");
+    if (!el) return;
+    const to = e.relatedTarget;
+    if (!to || !to.closest || !to.closest(".label-text[data-tip]")) {
+      hoverTip.classList.remove("show");
+    }
   });
 
   // ---------------------------------------------------------------
