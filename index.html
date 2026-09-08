@@ -343,6 +343,37 @@
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
     padding: 7px 10px; color: var(--ink); font: 13px "Inter", sans-serif;
   }
+
+  /* Visão Geral: os 4 controles de filtro (Tipo, Vagas, Ordenar, Grupos) sempre com a
+     mesma largura entre si — o botão Exportar PDF fica fora dessa regra (é uma ação,
+     não um filtro). */
+  #view-geral .filters select,
+  #view-geral .filters .multiselect { flex: 1 1 0; min-width: 160px; }
+  #view-geral .filters .multiselect-btn { width: 100%; }
+
+  .multiselect { position: relative; }
+  .multiselect-btn {
+    appearance: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 10px; color: var(--ink); font: 13px "Inter", sans-serif; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; width: 100%;
+  }
+  .multiselect-btn::after { content: "▾"; font-size: 10px; color: var(--ink-soft); margin-left: auto; }
+  .multiselect-panel {
+    display: none; position: absolute; z-index: 50; top: calc(100% + 6px); left: 0;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: var(--shadow); padding: 6px; max-height: 260px; overflow-y: auto; min-width: 190px;
+  }
+  .multiselect.open .multiselect-panel { display: block; }
+  .multiselect-panel .ms-action {
+    font-size: 11.5px; color: var(--accent-ink); cursor: pointer; padding: 6px 8px;
+    border-bottom: 1px solid var(--line); margin-bottom: 4px;
+  }
+  .multiselect-panel .ms-action:hover { color: var(--ink); }
+  .multiselect-panel label {
+    display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px;
+    font-size: 13px; cursor: pointer; font-variant-numeric: tabular-nums;
+  }
+  .multiselect-panel label:hover { background: var(--surface-2); }
   .btn {
     appearance: none; border: none; background: var(--good);
     color: #fff; border-radius: 999px; padding: 8px 16px; font: 600 12.5px "Inter", sans-serif;
@@ -556,6 +587,28 @@
     .callout-row { grid-template-columns: 1fr; }
     .compra-panel .callout-row, .fin-panel .callout-row { grid-template-columns: 1fr; }
     .compra-panel .compra-grid { grid-template-columns: 1fr; }
+
+    /* Consórcio/Financiamento empilham só no mobile — "sempre 50/50" continua valendo
+       em qualquer largura maior que este breakpoint. */
+    .split-row { grid-template-columns: 1fr; }
+
+    /* Visão Geral: filtros em grid 2x2, todos do mesmo tamanho; Exportar PDF vai para
+       uma linha própria abaixo, ocupando toda a largura. */
+    #view-geral .filters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    #view-geral .filters select, #view-geral .filters .multiselect { width: 100%; }
+    #view-geral .filters .btn.pdf { grid-column: 1 / -1; width: 100%; }
+
+    /* Analítico: filtros e botões empilhados, cada um ocupando toda a largura. */
+    #view-analitico .filters { flex-direction: column; align-items: stretch; }
+    #view-analitico .filters select,
+    #view-analitico .filters .btn.pdf { width: 100%; }
+
+    /* Grupo: espaçamento entrelinhas mínimo nas informações logo abaixo do número do grupo. */
+    .detail-facts { row-gap: 2px; column-gap: 16px; line-height: 1.2; }
+
+    /* Botão Voltar (e Exportar, que fica no mesmo bloco) centralizados e em largura total. */
+    .topbar-actions { width: 100%; align-items: stretch; }
+    .topbar-actions .btn { width: 100%; text-align: center; }
   }
   @media (min-width: 761px) and (max-width: 1180px) {
     .compra-panel .callout-row, .fin-panel .callout-row { grid-template-columns: repeat(2, 1fr); }
@@ -573,7 +626,7 @@
         <div class="sub" id="brandSub">Imobiliário &amp; Automóvel</div>
       </div>
     </div>
-    <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+    <div class="topbar-actions" style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
       <button class="btn back" id="btnVoltar" style="display:none;">← Voltar</button>
       <button class="btn pdf" id="exportPropostaBtn" style="display:none;" type="button">Exportar</button>
     </div>
@@ -616,7 +669,6 @@
     <div class="toolbar">
       <div style="display:flex; gap:10px; align-items:center; margin-left:auto;">
         <span class="count" id="cardCount"></span>
-        <input type="search" id="cardSearch" placeholder="Buscar grupo…">
       </div>
     </div>
     <div class="filters">
@@ -635,6 +687,10 @@
         <option value="prazo_desc">Ordenar: maior prazo</option>
         <option value="grupo_asc">Ordenar: número do grupo</option>
       </select>
+      <div class="multiselect" id="filtroGruposWrap">
+        <button type="button" class="multiselect-btn" id="filtroGruposBtn">Grupos: todos</button>
+        <div class="multiselect-panel" id="filtroGruposPanel"></div>
+      </div>
       <button class="btn pdf" id="exportPdfGeral">Exportar PDF</button>
     </div>
     <div class="cards" id="cardsGrid"></div>
@@ -777,6 +833,15 @@
     });
   }
 
+  // Trunca o valor digitado a um nº máximo de caracteres — usado nos campos numéricos
+  // estreitos do Consórcio para o texto digitado nunca quebrar o layout do card.
+  function limitInputLength(el, maxLen) {
+    if (!el) return;
+    el.addEventListener("input", () => {
+      if (el.value.length > maxLen) el.value = el.value.slice(0, maxLen);
+    });
+  }
+
   // Exporta a visão atual (já filtrada) como PDF via impressão do navegador.
   // O título da aba vira o nome sugerido do arquivo no diálogo "Salvar como PDF".
   function exportPdf() {
@@ -807,7 +872,7 @@
       row("Valor do crédito", "R$ " + (document.getElementById("simCredito").value || "0")),
       row("Percentual de lance", (document.getElementById("simLancePct").value || "0") + "%"),
       row("Lance embutido", (document.getElementById("simEmbutidoPct").value || "0") + "%"),
-      row("Parcelas pagas", document.getElementById("simParcelasPagas").value || "0"),
+      row("Prazo", (document.getElementById("simPrazoRestante").value || "0") + " meses"),
       row("Parcela na contratação", fullVal(document.getElementById("compraParcelaContratacao"))),
       row("Parcela pós-contemplação", fullVal(document.getElementById("compraParcelaPos"))),
       row("Crédito líquido", fullVal(document.getElementById("compraCreditoLiquido"))),
@@ -1142,7 +1207,8 @@
   // ---------------------------------------------------------------
   // Cards (Visão Geral)
   // ---------------------------------------------------------------
-  const cardState = { search: "", categoria: "", vagas: "", sort: "lance_asc" };
+  const cardState = { categoria: "", vagas: "", sort: "lance_asc" };
+  const filtroGruposSel = new Set();
 
   function sortCodes(codes) {
     const arr = codes.slice();
@@ -1174,9 +1240,9 @@
   }
 
   function renderCards() {
-    const filter = cardState.search.trim().toLowerCase();
     const grid = document.getElementById("cardsGrid");
-    let codes = grupoCodes.filter(c => c.toLowerCase().includes(filter) || c.replace(/^0+/, "").includes(filter));
+    let codes = grupoCodes.slice();
+    if (filtroGruposSel.size) codes = codes.filter(c => filtroGruposSel.has(c));
     if (cardState.categoria) codes = codes.filter(c => grupoInfo[c].categoria === cardState.categoria);
     if (cardState.vagas === "com") codes = codes.filter(c => (grupoInfo[c].vagas_nao_utilizadas || 0) > 0);
     if (cardState.vagas === "sem") codes = codes.filter(c => (grupoInfo[c].vagas_nao_utilizadas || 0) === 0);
@@ -1250,7 +1316,41 @@
     });
   }
 
-  document.getElementById("cardSearch").addEventListener("input", (e) => { cardState.search = e.target.value; renderCards(); });
+  function updateFiltroGruposBtn() {
+    const btn = document.getElementById("filtroGruposBtn");
+    btn.textContent = filtroGruposSel.size
+      ? `Grupos: ${filtroGruposSel.size} selecionado${filtroGruposSel.size === 1 ? "" : "s"}`
+      : "Grupos: todos";
+  }
+  function renderFiltroGruposPanel() {
+    const panel = document.getElementById("filtroGruposPanel");
+    panel.innerHTML = `<div class="ms-action" id="msLimparGrupos">Limpar seleção</div>` +
+      grupoCodes.map(c => `<label><input type="checkbox" value="${c}" ${filtroGruposSel.has(c) ? "checked" : ""}> ${c.replace(/^0+/, "")}</label>`).join("");
+    panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener("change", (e) => {
+        if (e.target.checked) filtroGruposSel.add(e.target.value);
+        else filtroGruposSel.delete(e.target.value);
+        updateFiltroGruposBtn();
+        renderCards();
+      });
+    });
+    document.getElementById("msLimparGrupos").addEventListener("click", () => {
+      filtroGruposSel.clear();
+      renderFiltroGruposPanel();
+      updateFiltroGruposBtn();
+      renderCards();
+    });
+  }
+  renderFiltroGruposPanel();
+  document.getElementById("filtroGruposBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.getElementById("filtroGruposWrap").classList.toggle("open");
+  });
+  document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("filtroGruposWrap");
+    if (wrap && !wrap.classList.contains("open")) return;
+    if (wrap && !wrap.contains(e.target)) wrap.classList.remove("open");
+  });
   document.getElementById("filtroCategoria").addEventListener("change", (e) => { cardState.categoria = e.target.value; renderCards(); });
   document.getElementById("filtroVagas").addEventListener("change", (e) => { cardState.vagas = e.target.value; renderCards(); });
   document.getElementById("ordenarCards").addEventListener("change", (e) => { cardState.sort = e.target.value; renderCards(); });
@@ -1554,6 +1654,12 @@
   // ---------------------------------------------------------------
   let currentProbGrupo = grupoCodes[0];
 
+  // Valores digitados no simulador de Consórcio/Financiamento — persistem ao trocar o
+  // grupo selecionado (renderProbDetail() lê o DOM atual para cá antes de re-renderizar,
+  // e usa esses valores como "value" inicial do novo HTML, em vez de zerar tudo de novo).
+  const compraFormState = { credito: "0,00", lancePct: "0.00", embutidoPct: "0", prazoRestante: "0" };
+  const finFormState = { sistema: "PRICE", taxaAnual: "10", prazoMeses: "360" };
+
   function selectProbGrupo(codigo) {
     currentProbGrupo = codigo;
     renderProbDetail();
@@ -1589,18 +1695,19 @@
   // Simulação de compra: parcela na contratação, parcela pós-lance, valores do lance
   // (total / embutido / recursos próprios) e crédito líquido. Ver
   // [[feedback-cnp-assembleia-calc-rules]] para as regras confirmadas com o Edval.
-  function updateCompraSim(lancePctOverride) {
-    const info = grupoInfo[currentProbGrupo];
+  function updateCompraSim() {
     const el = (id) => document.getElementById(id);
     const num = (id) => parseFloat(el(id) && el(id).value) || 0;
     if (!el("simCredito")) return;
 
     const credito = parseBRL(el("simCredito") && el("simCredito").value);
-    const lancePct = lancePctOverride !== undefined ? lancePctOverride : num("simLancePct");
+    const lancePct = num("simLancePct");
     const embutidoPct = num("simEmbutidoPct");
-    const parcelasPagas = Math.max(0, Math.round(num("simParcelasPagas")));
 
-    const prazoRestanteAtual = Math.max(prazoRemanescente(info) ?? (info.prazo_meses || 1), 1);
+    // Prazo é um campo próprio do simulador de Consórcio — deliberadamente independente
+    // do grupo selecionado no módulo Probabilidade (o usuário informa o prazo que quer
+    // simular, não o do grupo que estiver escolhido lá embaixo).
+    const prazoRestanteAtual = Math.max(0, Math.round(num("simPrazoRestante")));
 
     const saldoDevedorTotal = credito * (1 + TAXA_TOTAL_PCT / 100);
     const parcelaContratacao = prazoRestanteAtual > 0 ? saldoDevedorTotal / prazoRestanteAtual : null;
@@ -1610,11 +1717,11 @@
     const valorLanceProprio = valorLanceTotal - valorLanceEmbutido;
     const creditoLiquido = credito - valorLanceEmbutido;
 
-    // "parcelas pagas" = parcelas regulares já pagas; some-se +1 pela parcela de
-    // adesão (a primeira), que é descontada à parte por instrução do Edval.
-    const valoresPagos = parcelaContratacao !== null ? parcelaContratacao * (parcelasPagas + 1) : 0;
+    // "Parcelas pagas" foi removido do painel — assume-se apenas a parcela de adesão
+    // (a primeira, sempre paga) já quitada antes do lance, por instrução do Edval.
+    const valoresPagos = parcelaContratacao !== null ? parcelaContratacao : 0;
     const novoSaldo = saldoDevedorTotal - valorLanceTotal - valoresPagos;
-    const novoPrazoRemanescente = prazoRestanteAtual - parcelasPagas - 1;
+    const novoPrazoRemanescente = prazoRestanteAtual - 1;
     const parcelaPos = (novoPrazoRemanescente > 0 && novoSaldo > 0) ? novoSaldo / novoPrazoRemanescente : null;
 
     const set = (id, text) => { const e = el(id); if (e) e.textContent = text; };
@@ -1628,8 +1735,8 @@
     if (parcelaPos === null) {
       set("compraParcelaPos", "—");
       if (posLbl) posLbl.dataset.tip = novoPrazoRemanescente <= 0
-        ? "prazo remanescente esgotado com essas parcelas pagas"
-        : "saldo devedor após lance e parcelas pagas";
+        ? "prazo esgotado"
+        : "saldo devedor após lance e adesão";
     } else {
       set("compraParcelaPos", fmtBRL(parcelaPos));
       if (posLbl) posLbl.dataset.tip = `saldo ${fmtBRL(novoSaldo)} ÷ ${fmtInt(novoPrazoRemanescente)} assemb. restantes`;
@@ -1712,6 +1819,18 @@
   }
 
   function renderProbDetail() {
+    // Salva o que estiver digitado no simulador antes de jogar fora o HTML atual, para
+    // reaplicar como valor inicial do novo HTML — assim trocar de grupo não zera os campos.
+    if (document.getElementById("simCredito")) {
+      compraFormState.credito = document.getElementById("simCredito").value;
+      compraFormState.lancePct = document.getElementById("simLancePct").value;
+      compraFormState.embutidoPct = document.getElementById("simEmbutidoPct").value;
+      compraFormState.prazoRestante = document.getElementById("simPrazoRestante").value;
+      finFormState.sistema = document.getElementById("finSistema").value;
+      finFormState.taxaAnual = document.getElementById("finTaxaAnual").value;
+      finFormState.prazoMeses = document.getElementById("finPrazoMeses").value;
+    }
+
     const codigo = currentProbGrupo;
     const rows = byGrupo[codigo] || [];
     const info = grupoInfo[codigo];
@@ -1730,7 +1849,6 @@
     const pSorteio = cotasAtivas > 0 ? 1 / cotasAtivas : null;
     const assembleiasRestantes = prazoRemanescente(info);
     const prazoRestanteAtual = Math.max(assembleiasRestantes || info.prazo_meses || 1, 1);
-    const defaultCredito = 0;
     const probGrupoOptions = grupoCodes.map(c => {
       const sit = situacaoInfo(c);
       return `<option value="${c}" ${c === codigo ? "selected" : ""}>${c.replace(/^0+/, "")} — ${sit.label}</option>`;
@@ -1745,29 +1863,29 @@
         <div class="compra-grid">
           <div class="compra-field">
             <span class="lbl">Valor do crédito</span>
-            <div class="input-wrap"><span class="unit">R$</span><input type="text" inputmode="decimal" id="simCredito" value="${defaultCredito.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}"></div>
+            <div class="input-wrap"><span class="unit">R$</span><input type="text" inputmode="decimal" id="simCredito" value="${compraFormState.credito}"></div>
           </div>
           <div class="compra-field">
             <span class="lbl">Percentual de lance</span>
-            <div class="input-wrap"><input type="number" id="simLancePct" min="0" max="${simMax}" step="0.01" value="${defaultSim.toFixed(2)}"><span class="unit">%</span></div>
+            <div class="input-wrap"><input type="number" id="simLancePct" min="0" max="100" step="0.01" value="${compraFormState.lancePct}"><span class="unit">%</span></div>
           </div>
           <div class="compra-field">
             <span class="lbl">Lance embutido</span>
-            <div class="input-wrap"><input type="number" id="simEmbutidoPct" min="0" step="0.01" value="0"><span class="unit">%</span></div>
+            <div class="input-wrap"><input type="number" id="simEmbutidoPct" min="0" step="0.01" value="${compraFormState.embutidoPct}"><span class="unit">%</span></div>
           </div>
           <div class="compra-field">
-            <span class="lbl">Parcelas pagas</span>
-            <div class="input-wrap"><input type="number" id="simParcelasPagas" min="0" step="1" value="0"></div>
+            <span class="lbl">Prazo</span>
+            <div class="input-wrap"><input type="number" id="simPrazoRestante" min="0" step="1" value="${compraFormState.prazoRestante}"><span class="unit">meses</span></div>
           </div>
         </div>
 
         <div class="callout-row">
           <div class="callout">
-            <div class="label"><span class="label-text" id="compraParcelaContratacaoLbl" title="crédito + ${TAXA_TOTAL_PCT}% de taxas ÷ prazo restante atual (${fmtInt(prazoRestanteAtual)} assemb.)">Parcela na contratação</span></div>
+            <div class="label"><span class="label-text" id="compraParcelaContratacaoLbl" data-tip="crédito + ${TAXA_TOTAL_PCT}% de taxas ÷ prazo informado ao lado">Parcela na contratação</span></div>
             <div class="value num" id="compraParcelaContratacao">—</div>
           </div>
           <div class="callout">
-            <div class="label"><span class="label-text" id="compraParcelaPosLbl" title="saldo devedor após lance e parcelas pagas">Parcela pós-contemplação</span></div>
+            <div class="label"><span class="label-text" id="compraParcelaPosLbl" data-tip="saldo devedor após lance e adesão">Parcela pós-contemplação</span></div>
             <div class="value num good" id="compraParcelaPos">—</div>
           </div>
           <div class="callout">
@@ -1804,18 +1922,18 @@
             <span class="lbl">Tabela</span>
             <div class="input-wrap">
               <select id="finSistema">
-                <option value="PRICE">PRICE</option>
-                <option value="SAC">SAC</option>
+                <option value="PRICE" ${finFormState.sistema === "PRICE" ? "selected" : ""}>PRICE</option>
+                <option value="SAC" ${finFormState.sistema === "SAC" ? "selected" : ""}>SAC</option>
               </select>
             </div>
           </div>
           <div class="compra-field">
             <span class="lbl">Tx ao Ano</span>
-            <div class="input-wrap"><input type="number" id="finTaxaAnual" min="0" step="0.01" value="10"><span class="unit">%</span></div>
+            <div class="input-wrap"><input type="number" id="finTaxaAnual" min="0" step="0.01" value="${finFormState.taxaAnual}"><span class="unit">%</span></div>
           </div>
           <div class="compra-field">
             <span class="lbl">Prazo</span>
-            <div class="input-wrap"><input type="number" id="finPrazoMeses" min="1" step="1" value="360"><span class="unit">meses</span></div>
+            <div class="input-wrap"><input type="number" id="finPrazoMeses" min="1" step="1" value="${finFormState.prazoMeses}"><span class="unit">meses</span></div>
           </div>
         </div>
 
@@ -1906,16 +2024,14 @@
     updateCompraSim();
     const slider = document.getElementById("simSlider");
     const numInput = document.getElementById("simInput");
-    const lanceInput = document.getElementById("simLancePct");
-    // Percentual de lance é compartilhado entre a simulação de compra e a probabilidade —
-    // os três controles (slider, simInput, simLancePct) ficam sempre sincronizados.
+    // Simular lance (slider + campo numérico) fica ligado ao grupo selecionado aqui em
+    // cima, porque a chance combinada é calculada sobre o histórico DESSE grupo. Já o
+    // percentual de lance do Consórcio (abaixo) é independente — ver simLancePct.
     function syncLancePct(v, sourceEl) {
       const clamped = Math.min(simMax, Math.max(0, v));
       if (slider && slider !== sourceEl) slider.value = clamped;
       if (numInput && numInput !== sourceEl) numInput.value = clamped.toFixed(2);
-      if (lanceInput && lanceInput !== sourceEl) lanceInput.value = clamped.toFixed(2);
       updateProbSim(clamped);
-      updateCompraSim(clamped);
     }
     if (slider) slider.addEventListener("input", (e) => syncLancePct(parseFloat(e.target.value), e.target));
     if (numInput) numInput.addEventListener("input", (e) => {
@@ -1929,20 +2045,15 @@
       v = Math.min(simMax, Math.max(0, v));
       e.target.value = v.toFixed(2);
     });
-    if (lanceInput) lanceInput.addEventListener("input", (e) => {
-      const raw = parseFloat(e.target.value);
-      if (isNaN(raw)) return;
-      syncLancePct(raw, e.target);
-    });
-    if (lanceInput) lanceInput.addEventListener("blur", (e) => {
-      let v = parseFloat(e.target.value);
-      if (isNaN(v)) v = 0;
-      v = Math.min(simMax, Math.max(0, v));
-      e.target.value = v.toFixed(2);
-    });
 
     attachCurrencyMask(document.getElementById("simCredito"));
-    ["simCredito", "simEmbutidoPct", "simParcelasPagas"].forEach(id => {
+    limitInputLength(document.getElementById("simLancePct"), 6);
+    limitInputLength(document.getElementById("simEmbutidoPct"), 6);
+    limitInputLength(document.getElementById("simPrazoRestante"), 4);
+    // Simulador de Consórcio: deliberadamente independente do grupo selecionado no
+    // módulo Probabilidade (nem o percentual de lance nem o prazo aqui usam dados
+    // desse grupo — o usuário digita os próprios números).
+    ["simCredito", "simLancePct", "simEmbutidoPct", "simPrazoRestante"].forEach(id => {
       const field = document.getElementById(id);
       if (field) field.addEventListener("input", () => updateCompraSim());
     });
