@@ -67,6 +67,7 @@
     body { background: #fff; }
     .topbar { border: 1px solid var(--line); }
     nav.tabs, .filters select, .filters button, input[type="search"] { display: none !important; }
+    #view-capa, .btn.back { display: none !important; }
     .card { break-inside: avoid; }
     .cards { grid-template-columns: repeat(3, 1fr); }
     .table-scroll { overflow: visible !important; width: 100% !important; }
@@ -259,6 +260,12 @@
   }
   .detail-head h2 { font-size: 26px; }
   .detail-head .credito { color: var(--ink-soft); font-size: 13px; margin-top: 4px; }
+  .grupo-header-select {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 4px 10px; color: var(--ink); font: 700 22px "Inter", sans-serif;
+    font-variant-numeric: tabular-nums; cursor: pointer; vertical-align: middle;
+  }
+  .grupo-header-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .detail-facts { display: flex; gap: 22px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); }
   .detail-facts b { color: var(--ink); font-weight: 600; }
 
@@ -285,6 +292,15 @@
 
   .chart-wrap { width: 100%; overflow-x: auto; }
   .callout-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+  .prob-toprow { grid-template-columns: repeat(4, 1fr); }
+  .prob-grupo-select {
+    width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 6px 8px; color: var(--ink); font: 600 15px "Inter", sans-serif; margin-top: 2px; cursor: pointer;
+  }
+  .prob-grupo-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  @media (max-width: 1000px) {
+    .prob-toprow { grid-template-columns: repeat(2, 1fr); }
+  }
   .callout {
     background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
     padding: 13px 15px; box-shadow: var(--shadow); min-width: 0; overflow: hidden;
@@ -336,6 +352,60 @@
   .btn.pdf { background: #15803D; }
   .btn.pdf:hover { background: #12692F; opacity: 1; }
   .btn.copied { background: var(--accent) !important; }
+  .btn.back { background: var(--gold); color: #241A00; }
+  .btn.back:hover { background: #E8AD42; opacity: 1; }
+
+  /* ---------- Capa (cover) ---------- */
+  .cover-hero { margin-bottom: 26px; }
+  .cover-hero h2 { font-size: 22px; margin-bottom: 6px; }
+  .cover-hero p { color: var(--ink-soft); font-size: 13.5px; max-width: 640px; }
+  .cover-section-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--ink-soft); margin: 28px 0 12px;
+  }
+  .cover-section-title:first-of-type { margin-top: 0; }
+  .top3-row, .module-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .module-row { grid-template-columns: repeat(2, 1fr); }
+  .top3-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; box-shadow: var(--shadow); display: flex; gap: 14px; align-items: flex-start;
+    cursor: pointer; transition: border-color .15s ease, transform .15s ease;
+  }
+  .top3-card:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+  .top3-rank {
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    background: var(--gold-soft); color: var(--gold); font-weight: 700; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .top3-body { min-width: 0; }
+  .top3-body .grupo { font-size: 18px; font-weight: 700; }
+  .top3-body .credito { font-size: 11.5px; color: var(--ink-soft); margin: 2px 0 8px; }
+  .top3-body .stat-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--ink-soft); }
+  .top3-body .stat-row b { color: var(--ink); font-weight: 600; font-size: 13px; }
+  .top3-empty {
+    color: var(--ink-soft); font-size: 13px; padding: 20px; border: 1px dashed var(--line);
+    border-radius: 14px; grid-column: 1 / -1; text-align: center;
+  }
+  .module-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px 18px; box-shadow: var(--shadow); cursor: pointer;
+    transition: border-color .15s ease, transform .15s ease;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .module-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .module-card .mark {
+    width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: var(--accent-soft); color: var(--accent-ink); font-weight: 700; font-size: 15px;
+  }
+  .module-card h3 { font-size: 15px; }
+  .module-card p { font-size: 12px; color: var(--ink-soft); margin: 0; }
+  @media (max-width: 900px) {
+    .top3-row, .module-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .top3-row, .module-row { grid-template-columns: 1fr; }
+  }
+
 
   /* ---------- Probabilidade (beta) ---------- */
   .prob-layout { display: grid; grid-template-columns: 230px 1fr; gap: 20px; align-items: start; }
@@ -430,7 +500,7 @@
     display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;
     margin-bottom: 16px;
   }
-  .compra-field { display: flex; flex-direction: column; gap: 5px; }
+  .compra-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
   .compra-field .lbl { font-size: 11px; font-weight: 600; color: var(--ink-soft); }
   .compra-field .input-wrap {
     display: flex; align-items: center; gap: 6px;
@@ -452,12 +522,12 @@
   .compra-field select:focus { outline: none; }
 
   .split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-  .split-row .panel { margin-bottom: 0; }
+  .split-row .panel { margin-bottom: 0; min-width: 0; overflow: hidden; }
   .compra-panel .callout-row { grid-template-columns: repeat(3, 1fr); }
   .fin-panel .callout-row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-  @media (max-width: 980px) {
-    .split-row { grid-template-columns: 1fr; }
-  }
+  .compra-panel .compra-grid { grid-template-columns: repeat(4, 1fr); }
+  /* Consórcio e Financiamento sempre dividem a tela ao meio, em qualquer largura —
+     por pedido explícito do Edval, sem colapsar para 1 coluna no mobile. */
 
   .horizon-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
   .horizon-cell {
@@ -485,9 +555,11 @@
     .grupo-picker { max-height: 220px; }
     .callout-row { grid-template-columns: 1fr; }
     .compra-panel .callout-row, .fin-panel .callout-row { grid-template-columns: 1fr; }
+    .compra-panel .compra-grid { grid-template-columns: 1fr; }
   }
   @media (min-width: 761px) and (max-width: 1180px) {
     .compra-panel .callout-row, .fin-panel .callout-row { grid-template-columns: repeat(2, 1fr); }
+    .compra-panel .compra-grid { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 
@@ -501,26 +573,48 @@
         <div class="sub" id="brandSub">Imobiliário &amp; Automóvel</div>
       </div>
     </div>
-    <div class="meta">
-      <div>Última coleta</div>
-      <div class="num" id="lastUpdate">—</div>
+    <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+      <button class="btn back" id="btnVoltar" style="display:none;">← Voltar</button>
+      <button class="btn pdf" id="exportPropostaBtn" style="display:none;" type="button">Exportar</button>
     </div>
   </header>
 
-  <nav class="tabs">
-    <button data-view="geral" class="active">Visão Geral</button>
-    <button data-view="grupo">Grupo</button>
-    <button data-view="analitico">Analítico</button>
-    <button data-view="probabilidade">Probabilidade <span class="beta-tag">beta</span></button>
-  </nav>
+  <!-- ===================== CAPA ===================== -->
+  <section class="view active" id="view-capa">
+    <div class="cover-section-title">Destaques do mês · top 3 grupos</div>
+    <div class="top3-row" id="top3Row"></div>
+
+    <div class="cover-section-title">Módulos</div>
+    <div class="module-row" id="moduleRow">
+      <div class="module-card" data-view="geral">
+        <div class="mark">§</div>
+        <h3>Visão Geral</h3>
+        <p>Cards de todos os grupos, filtros e exportação em PDF.</p>
+      </div>
+      <div class="module-card" data-view="grupo">
+        <div class="mark">#</div>
+        <h3>Grupos</h3>
+        <p>Detalhe, histórico e comparativo de um grupo específico.</p>
+      </div>
+      <div class="module-card" data-view="analitico">
+        <div class="mark">Σ</div>
+        <h3>Analítico</h3>
+        <p>Base completa de assembleias, ordenável e exportável.</p>
+      </div>
+      <div class="module-card" data-view="probabilidade">
+        <div class="mark">%</div>
+        <h3>Simulador</h3>
+        <p>Consórcio, financiamento e probabilidade de contemplação.</p>
+      </div>
+    </div>
+  </section>
 
   <!-- ===================== VISÃO GERAL ===================== -->
-  <section class="view active" id="view-geral">
+  <section class="view" id="view-geral">
     <div class="kpis" id="kpiRow"></div>
 
     <div class="toolbar">
-      <h2>Grupos</h2>
-      <div style="display:flex; gap:10px; align-items:center;">
+      <div style="display:flex; gap:10px; align-items:center; margin-left:auto;">
         <span class="count" id="cardCount"></span>
         <input type="search" id="cardSearch" placeholder="Buscar grupo…">
       </div>
@@ -537,8 +631,8 @@
         <option value="sem">Somente sem vagas</option>
       </select>
       <select id="ordenarCards">
-        <option value="prazo_desc">Ordenar: maior prazo primeiro</option>
-        <option value="lance_asc">Ordenar: menor lance % primeiro</option>
+        <option value="lance_asc" selected>Ordenar: menor lance %</option>
+        <option value="prazo_desc">Ordenar: maior prazo</option>
         <option value="grupo_asc">Ordenar: número do grupo</option>
       </select>
       <button class="btn pdf" id="exportPdfGeral">Exportar PDF</button>
@@ -548,10 +642,7 @@
 
   <!-- ===================== GRUPO ===================== -->
   <section class="view" id="view-grupo">
-    <div class="grupo-layout">
-      <div class="grupo-picker" id="grupoPicker"></div>
-      <div id="grupoDetail"></div>
-    </div>
+    <div id="grupoDetail"></div>
   </section>
 
   <!-- ===================== ANALÍTICO ===================== -->
@@ -576,10 +667,7 @@
 
   <!-- ===================== PROBABILIDADE (beta) ===================== -->
   <section class="view" id="view-probabilidade">
-    <div class="prob-layout">
-      <div class="grupo-picker" id="probPicker"></div>
-      <div id="probDetail"></div>
-    </div>
+    <div id="probDetail"></div>
   </section>
 
   <div class="modal-overlay" id="probModalOverlay">
@@ -607,6 +695,7 @@
   <div id="exportPrintArea"></div>
 
   <footer class="note">
+    <div style="margin-bottom:8px;">Última coleta: <b style="color:var(--ink);" class="num" id="lastUpdate">—</b></div>
     Metodologia: <b>maior/menor lance</b> considera apenas a modalidade Lance Livre (sorteio e lance
     fixo ficam de fora). <b>Pessoas no menor lance</b> vem da lista completa de ofertas da assembleia,
     não só dos vencedores. <b>Empatados não contemplados</b> é uma aproximação
@@ -854,14 +943,39 @@
     return (r.qtd_pessoas_lance_igual_menor || 0) / r.qtd_contemplados_lance_livre;
   }
 
+  // Assembleia corrente com fallback: quando a base não traz assembleia_corrente,
+  // considera a data da 1ª assembleia como "assembleia 1" e conta os meses corridos
+  // desde então (assembleias são mensais) para estimar em que assembleia o grupo está.
+  function assembleiaCorrenteEstimada(info) {
+    if (info.assembleia_corrente) return info.assembleia_corrente;
+    if (!info.primeira_assembleia) return null;
+    const partes = info.primeira_assembleia.split("/");
+    if (partes.length !== 3) return null;
+    const [d, m, y] = partes.map(Number);
+    const inicio = new Date(y, m - 1, d);
+    if (isNaN(inicio.getTime())) return null;
+    const hoje = new Date();
+    let meses = (hoje.getFullYear() - inicio.getFullYear()) * 12 + (hoje.getMonth() - inicio.getMonth());
+    if (hoje.getDate() < inicio.getDate()) meses -= 1;
+    return Math.max(1, meses + 1);
+  }
+
+  // Prazo remanescente = prazo total − assembleia corrente (real ou estimada).
+  function prazoRemanescente(info) {
+    const atual = assembleiaCorrenteEstimada(info);
+    if (!info.prazo_meses || !atual) return null;
+    return Math.max(info.prazo_meses - atual, 0);
+  }
+
   // Regra do lance máximo permitido: ((assembleia decorrida ÷ prazo total) - 1) × -1
   // = 1 - (assembleia decorrida ÷ prazo total) = prazo restante ÷ prazo total.
   // "Assembleia decorrida" = assembleia_corrente - 1, pois a assembleia corrente ainda vai
   // acontecer (ainda não decorreu) — confirmado batendo exato com o menor lance histórico
   // mínimo de vários grupos (1034, 1029, 1025, 2127).
   function maxLancePct(info) {
-    if (!info.prazo_meses || !info.assembleia_corrente) return null;
-    const decorrida = info.assembleia_corrente - 1;
+    const atual = assembleiaCorrenteEstimada(info);
+    if (!info.prazo_meses || !atual) return null;
+    const decorrida = atual - 1;
     return Math.min(100, Math.max(0, (1 - decorrida / info.prazo_meses) * 100));
   }
 
@@ -909,12 +1023,19 @@
   // Tabs
   // ---------------------------------------------------------------
   const tabs = document.querySelectorAll("nav.tabs button");
-  const views = { geral: document.getElementById("view-geral"), grupo: document.getElementById("view-grupo"), analitico: document.getElementById("view-analitico"), probabilidade: document.getElementById("view-probabilidade") };
+  const views = { capa: document.getElementById("view-capa"), geral: document.getElementById("view-geral"), grupo: document.getElementById("view-grupo"), analitico: document.getElementById("view-analitico"), probabilidade: document.getElementById("view-probabilidade") };
   tabs.forEach(btn => btn.addEventListener("click", () => selectView(btn.dataset.view)));
   function selectView(name) {
     tabs.forEach(b => b.classList.toggle("active", b.dataset.view === name));
     Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === name));
+    document.getElementById("btnVoltar").style.display = name === "capa" ? "none" : "";
+    document.getElementById("exportPropostaBtn").style.display = name === "probabilidade" ? "" : "none";
   }
+  document.getElementById("btnVoltar").addEventListener("click", () => selectView("capa"));
+  document.getElementById("exportPropostaBtn").addEventListener("click", openExportModal);
+  document.querySelectorAll(".module-card").forEach(card => {
+    card.addEventListener("click", () => selectView(card.dataset.view));
+  });
 
   // last update = max data_assembleia across dataset
   (function () {
@@ -966,9 +1087,62 @@
   }
 
   // ---------------------------------------------------------------
+  // Top 3 (Capa) — grupos ativos que mais contemplam (maior qtd. de
+  // contemplados na última assembleia), com desempate por menor
+  // quantidade de empatados não contemplados no menor lance.
+  // ---------------------------------------------------------------
+  function renderTop3() {
+    const ativos = grupoCodes.filter(c => situacaoInfo(c).cls === "ok");
+    const scored = ativos.map(c => {
+      const latest = (byGrupo[c] || [])[0];
+      if (!latest) return null;
+      const ncm = naoContempladosMenor(latest);
+      return {
+        codigo: c,
+        contemplados: latest.qtd_contemplados_total || 0,
+        empatados: ncm.value,
+        approx: ncm.approx,
+      };
+    }).filter(Boolean);
+
+    scored.sort((a, b) => {
+      if (b.contemplados !== a.contemplados) return b.contemplados - a.contemplados;
+      const ea = a.empatados === null ? Infinity : a.empatados;
+      const eb = b.empatados === null ? Infinity : b.empatados;
+      return ea - eb;
+    });
+
+    const top3 = scored.slice(0, 3);
+    const el = document.getElementById("top3Row");
+    if (!top3.length) {
+      el.innerHTML = `<div class="top3-empty">Ainda não há dados suficientes para o destaque do mês.</div>`;
+      return;
+    }
+    el.innerHTML = top3.map((t, i) => {
+      const info = grupoInfo[t.codigo];
+      return `
+      <div class="top3-card" data-grupo="${t.codigo}">
+        <div class="top3-rank">${i + 1}º</div>
+        <div class="top3-body">
+          <div class="grupo">${t.codigo.replace(/^0+/, "")}</div>
+          <div class="credito">${info.categoria ? info.categoria + " · " : ""}${fmtBRL(info.valor_bem_menor)} – ${fmtBRL(info.valor_bem_maior)}</div>
+          <div class="stat-row"><span>Contemplados</span><b class="num">${fmtInt(t.contemplados)}</b></div>
+          <div class="stat-row"><span>Empatados não contemplados</span><b class="num">${t.empatados === null ? "—" : (t.approx ? "~" : "") + fmtInt(t.empatados)}</b></div>
+        </div>
+      </div>`;
+    }).join("");
+    el.querySelectorAll(".top3-card").forEach(card => {
+      card.addEventListener("click", () => {
+        selectView("grupo");
+        selectGrupo(card.dataset.grupo);
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------
   // Cards (Visão Geral)
   // ---------------------------------------------------------------
-  const cardState = { search: "", categoria: "", vagas: "", sort: "prazo_desc" };
+  const cardState = { search: "", categoria: "", vagas: "", sort: "lance_asc" };
 
   function sortCodes(codes) {
     const arr = codes.slice();
@@ -1088,24 +1262,8 @@
   let currentGrupo = grupoCodes[0];
   let currentRange = 3;
 
-  function renderPicker() {
-    const el = document.getElementById("grupoPicker");
-    el.innerHTML = grupoCodes.map(c => {
-      const sit = situacaoInfo(c);
-      return `<div class="item ${c === currentGrupo ? "active" : ""}" data-grupo="${c}">
-        <span style="display:flex;align-items:center;gap:8px;">
-          <span class="dot ${sit.dot}"></span><span class="g">${c.replace(/^0+/, "")}</span>
-        </span>
-      </div>`;
-    }).join("");
-    el.querySelectorAll(".item").forEach(item => {
-      item.addEventListener("click", () => selectGrupo(item.dataset.grupo));
-    });
-  }
-
   function selectGrupo(codigo) {
     currentGrupo = codigo;
-    document.querySelectorAll("#grupoPicker .item").forEach(i => i.classList.toggle("active", i.dataset.grupo === codigo));
     renderDetail();
   }
 
@@ -1152,7 +1310,7 @@
     const lastValid = [...chron].reverse().find(r => r.menor_lance_pct !== null);
     const lastIdx = chron.indexOf(lastValid);
 
-    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible;">
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto; display:block; overflow:visible;">
       ${grid}
       ${maiorPath ? `<path d="${maiorPath}" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="3 3"></path>` : ""}
       ${menorPath ? `<path d="${menorPath}" fill="none" stroke="var(--gold)" stroke-width="2"></path>` : ""}
@@ -1172,6 +1330,10 @@
 
     const ncm = latest ? naoContempladosMenor(latest) : { value: null, approx: false };
     const ratio = latest ? candidatosPorVaga(latest) : null;
+
+    const grupoOptions = grupoCodes.map(c =>
+      `<option value="${c}" ${c === codigo ? "selected" : ""}>${c.replace(/^0+/, "")}</option>`
+    ).join("");
 
     const tableRows = shown.map((r, i) => {
       const prev = shown[i + 1] || rows[rows.indexOf(r) + 1];
@@ -1205,14 +1367,14 @@
     document.getElementById("grupoDetail").innerHTML = `
       <div class="detail-head">
         <div>
-          <h2>Grupo ${codigo.replace(/^0+/, "")}
+          <h2>GRUPO <select id="grupoHeaderSelect" class="grupo-header-select">${grupoOptions}</select>
             <span class="chip ${sit.cls}" style="vertical-align:middle; margin-left:6px;">${sit.label}</span>
             <span class="chip vagas${info.vagas_nao_utilizadas === 0 ? " zero" : ""}" style="vertical-align:middle; margin-left:4px;">${fmtInt(info.vagas_nao_utilizadas)} vaga${info.vagas_nao_utilizadas === 1 ? "" : "s"}</span>
           </h2>
-          <div class="credito">${fmtBRL(info.valor_bem_menor)} – ${fmtBRL(info.valor_bem_maior)} · ${info.caracteristica || ""}</div>
+          <div class="credito">${info.categoria ? info.categoria + " · " : ""}${fmtBRL(info.valor_bem_menor)} – ${fmtBRL(info.valor_bem_maior)} · ${info.caracteristica || ""}</div>
         </div>
         <div class="detail-facts">
-          <div>Prazo <b>${info.prazo_meses ?? "—"} meses</b></div>
+          <div>Prazo remanescente <b>${prazoRemanescente(info) ?? "—"} meses</b></div>
           <div>Cotas ativas <b>${fmtInt(info.cotas_ativas_utilizadas)}</b></div>
           <div>1ª assembleia <b>${info.primeira_assembleia ?? "—"}</b></div>
           <div>Próxima <b>${info.proxima_assembleia ?? "—"}</b></div>
@@ -1272,6 +1434,9 @@
         b.addEventListener("click", () => { currentRange = r; renderDetail(); });
       });
     }
+
+    const grupoSelect = document.getElementById("grupoHeaderSelect");
+    if (grupoSelect) grupoSelect.addEventListener("change", (e) => selectGrupo(e.target.value));
   }
 
   // ---------------------------------------------------------------
@@ -1389,24 +1554,8 @@
   // ---------------------------------------------------------------
   let currentProbGrupo = grupoCodes[0];
 
-  function renderProbPicker() {
-    const el = document.getElementById("probPicker");
-    el.innerHTML = grupoCodes.map(c => {
-      const sit = situacaoInfo(c);
-      return `<div class="item ${c === currentProbGrupo ? "active" : ""}" data-grupo="${c}">
-        <span style="display:flex;align-items:center;gap:8px;">
-          <span class="dot ${sit.dot}"></span><span class="g">${c.replace(/^0+/, "")}</span>
-        </span>
-      </div>`;
-    }).join("");
-    el.querySelectorAll(".item").forEach(item => {
-      item.addEventListener("click", () => selectProbGrupo(item.dataset.grupo));
-    });
-  }
-
   function selectProbGrupo(codigo) {
     currentProbGrupo = codigo;
-    document.querySelectorAll("#probPicker .item").forEach(i => i.classList.toggle("active", i.dataset.grupo === codigo));
     renderProbDetail();
   }
 
@@ -1451,8 +1600,7 @@
     const embutidoPct = num("simEmbutidoPct");
     const parcelasPagas = Math.max(0, Math.round(num("simParcelasPagas")));
 
-    const prazoRestanteAtual = (info.prazo_meses && info.assembleia_corrente)
-      ? Math.max(info.prazo_meses - info.assembleia_corrente, 1) : (info.prazo_meses || 1);
+    const prazoRestanteAtual = Math.max(prazoRemanescente(info) ?? (info.prazo_meses || 1), 1);
 
     const saldoDevedorTotal = credito * (1 + TAXA_TOTAL_PCT / 100);
     const parcelaContratacao = prazoRestanteAtual > 0 ? saldoDevedorTotal / prazoRestanteAtual : null;
@@ -1572,27 +1720,25 @@
     const maioresHist = validRows.map(r => r.maior_lance_pct);
     const capPct = maxLancePct(info);
     const simMax = capPct === null ? 100 : capPct;
-    const defaultSim = Math.min(menores.length ? menores[0] : 50, simMax);
+    // Os valores dos campos editáveis sempre começam zerados, independente do
+    // grupo selecionado — o usuário informa manualmente os números que quer simular.
+    const defaultSim = 0;
     const minHist = menores.length ? Math.min(...menores) : null;
     const maxHist = maioresHist.length ? Math.max(...maioresHist) : null;
     const total = validRows.length;
     const cotasAtivas = info.cotas_ativas_utilizadas || 0;
     const pSorteio = cotasAtivas > 0 ? 1 / cotasAtivas : null;
-    const assembleiasRestantes = (info.prazo_meses && info.assembleia_corrente)
-      ? Math.max(info.prazo_meses - info.assembleia_corrente, 0) : null;
+    const assembleiasRestantes = prazoRemanescente(info);
     const prazoRestanteAtual = Math.max(assembleiasRestantes || info.prazo_meses || 1, 1);
-    const defaultCredito = info.valor_bem_menor || 0;
+    const defaultCredito = 0;
+    const probGrupoOptions = grupoCodes.map(c => {
+      const sit = situacaoInfo(c);
+      return `<option value="${c}" ${c === codigo ? "selected" : ""}>${c.replace(/^0+/, "")} — ${sit.label}</option>`;
+    }).join("");
+
+    const probSubtitle = `${fmtInt(cotasAtivas)} cotas ativas · ${fmtInt(info.vagas_nao_utilizadas)} vagas no grupo${assembleiasRestantes === null ? "" : ` · ${assembleiasRestantes} assembleias até o fim do prazo`}`;
 
     document.getElementById("probDetail").innerHTML = `
-      <div class="detail-head">
-        <div>
-          <h2>Grupo ${codigo.replace(/^0+/, "")}
-            <button class="btn pdf" id="exportPropostaBtn" style="font-size:11.5px; padding:6px 14px; vertical-align:middle; margin-left:10px;" type="button">Exportar</button>
-          </h2>
-          <div class="credito">${fmtInt(cotasAtivas)} cotas ativas · ${fmtInt(info.vagas_nao_utilizadas)} vagas no grupo${assembleiasRestantes === null ? "" : ` · ${assembleiasRestantes} assembleias até o fim do prazo`}</div>
-        </div>
-      </div>
-
       <div class="split-row">
       <div class="panel compra-panel">
         <h3>Consórcio</h3>
@@ -1697,7 +1843,11 @@
 
       <div class="panel prob-frame">
         <h3>Probabilidade de contemplação</h3>
-        <div class="callout-row">
+        <div class="callout-row prob-toprow">
+          <div class="callout">
+            <div class="label">Grupo selecionado</div>
+            <select id="probGrupoSelect" class="prob-grupo-select">${probGrupoOptions}</select>
+          </div>
           <div class="callout">
             <div class="label">Chance por sorteio (por mês)</div>
             <div class="value num" id="probChanceSorteio">${pSorteio === null ? "—" : fmtPct(pSorteio * 100)}</div>
@@ -1716,6 +1866,7 @@
             <div class="note">sorteio + lance, por assembleia</div>
           </div>
         </div>
+        <div class="credito" style="margin-top:-6px; margin-bottom:16px;">${probSubtitle}</div>
 
         <div class="prob-subsection">
           <h4>Simular lance</h4>
@@ -1728,7 +1879,7 @@
           </div>
           <div class="hint" style="color:var(--ink-soft); font-size:11.5px; margin-top:-2px; margin-bottom:10px;">
             ${capPct === null ? "Sem dados de prazo para calcular o lance máximo permitido." :
-              `Lance máximo permitido: <b style="color:var(--ink);">${fmtPct(capPct)}</b> (prazo restante: ${fmtInt(info.prazo_meses - info.assembleia_corrente + 1)}/${fmtInt(info.prazo_meses)} assembleias)`}
+              `Lance máximo permitido: <b style="color:var(--ink);">${fmtPct(capPct)}</b> (prazo restante: ${fmtInt(info.prazo_meses - assembleiaCorrenteEstimada(info) + 1)}/${fmtInt(info.prazo_meses)} assembleias)`}
           </div>
           <div class="hit-bar-wrap">
             <div class="hit-bar"><div id="hitBarFill" style="width:0%"></div></div>
@@ -1802,6 +1953,9 @@
       field.addEventListener(id === "finSistema" ? "change" : "input", () => updateFinSim());
     });
 
+    const grupoSelect = document.getElementById("probGrupoSelect");
+    if (grupoSelect) grupoSelect.addEventListener("change", (e) => selectProbGrupo(e.target.value));
+
     const infoBtn = document.getElementById("probInfoBtn");
     if (infoBtn) infoBtn.addEventListener("click", () => {
       openProbModal("Como isso é calculado (estimativa, não garantia)",
@@ -1812,9 +1966,6 @@
         baseado só no histórico recente coletado (${total} assembleia${total === 1 ? "" : "s"}
         com Lance Livre para este grupo).`);
     });
-
-    const exportBtn = document.getElementById("exportPropostaBtn");
-    if (exportBtn) exportBtn.addEventListener("click", openExportModal);
   }
 
   // ---------------------------------------------------------------
@@ -1911,12 +2062,11 @@
   // ---------------------------------------------------------------
   document.getElementById("brandSub").textContent = `${grupoCodes.length} grupos · Imobiliário & Automóvel`;
   renderKpis();
+  renderTop3();
   renderCards();
-  renderPicker();
   renderDetail();
   buildAnalFilters();
   renderAnal();
-  renderProbPicker();
   renderProbDetail();
 })();
 </script>
