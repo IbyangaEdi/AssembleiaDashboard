@@ -399,20 +399,21 @@
   .module-row { grid-template-columns: repeat(2, 1fr); }
   .top3-card {
     background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-    padding: 16px 18px; box-shadow: var(--shadow); display: flex; gap: 14px; align-items: flex-start;
+    padding: 11px 14px; box-shadow: var(--shadow); display: flex; gap: 10px; align-items: center;
     cursor: pointer; transition: border-color .15s ease, transform .15s ease;
   }
   .top3-card:hover { border-color: var(--line-strong); transform: translateY(-1px); }
   .top3-rank {
-    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
-    background: var(--gold-soft); color: var(--gold); font-weight: 700; font-size: 15px;
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+    background: var(--gold-soft); color: var(--gold); font-weight: 700; font-size: 12px;
     display: flex; align-items: center; justify-content: center;
   }
-  .top3-body { min-width: 0; }
-  .top3-body .grupo { font-size: 18px; font-weight: 700; }
-  .top3-body .credito { font-size: 11.5px; color: var(--ink-soft); margin: 2px 0 8px; }
-  .top3-body .stat-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--ink-soft); }
-  .top3-body .stat-row b { color: var(--ink); font-weight: 600; font-size: 13px; }
+  .top3-line {
+    min-width: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.4;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .top3-line b { color: var(--ink); font-weight: 700; font-size: 13.5px; }
+  .top3-line .sep { color: var(--line-strong); margin: 0 1px; }
   .top3-empty {
     color: var(--ink-soft); font-size: 13px; padding: 20px; border: 1px dashed var(--line);
     border-radius: 14px; grid-column: 1 / -1; text-align: center;
@@ -434,7 +435,8 @@
     .top3-row, .module-row { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 560px) {
-    .top3-row, .module-row { grid-template-columns: 1fr; }
+    /* Módulos ficam sempre 2x2, mesmo no celular — só o destaque do mês empilha. */
+    .top3-row { grid-template-columns: 1fr; }
   }
 
 
@@ -591,6 +593,11 @@
     /* Consórcio/Financiamento empilham só no mobile — "sempre 50/50" continua valendo
        em qualquer largura maior que este breakpoint. */
     .split-row { grid-template-columns: 1fr; }
+
+    /* Destaque do mês: fonte um pouco menor no celular para caber numa linha só. */
+    .top3-card { padding: 10px 12px; gap: 8px; }
+    .top3-line { font-size: 11.5px; }
+    .top3-line b { font-size: 12.5px; }
 
     /* Visão Geral: filtros em grid 2x2, todos do mesmo tamanho; Exportar PDF vai para
        uma linha própria abaixo, ocupando toda a largura. */
@@ -1164,6 +1171,7 @@
       const ncm = naoContempladosMenor(latest);
       return {
         codigo: c,
+        menorLance: latest.menor_lance_pct,
         contemplados: latest.qtd_contemplados_total || 0,
         empatados: ncm.value,
         approx: ncm.approx,
@@ -1184,15 +1192,13 @@
       return;
     }
     el.innerHTML = top3.map((t, i) => {
-      const info = grupoInfo[t.codigo];
+      const lanceTxt = t.menorLance === null ? "—" : fmtPct(t.menorLance);
+      const empatadosTxt = t.empatados === null ? "—" : (t.approx ? "~" : "") + fmtInt(t.empatados);
       return `
       <div class="top3-card" data-grupo="${t.codigo}">
         <div class="top3-rank">${i + 1}º</div>
-        <div class="top3-body">
-          <div class="grupo">${t.codigo.replace(/^0+/, "")}</div>
-          <div class="credito">${info.categoria ? info.categoria + " · " : ""}${fmtBRL(info.valor_bem_menor)} – ${fmtBRL(info.valor_bem_maior)}</div>
-          <div class="stat-row"><span>Contemplados</span><b class="num">${fmtInt(t.contemplados)}</b></div>
-          <div class="stat-row"><span>Empatados não contemplados</span><b class="num">${t.empatados === null ? "—" : (t.approx ? "~" : "") + fmtInt(t.empatados)}</b></div>
+        <div class="top3-line num">
+          <b>${t.codigo.replace(/^0+/, "")}</b><span class="sep">·</span>${lanceTxt}<span class="sep">·</span>${fmtInt(t.contemplados)} contempl.<span class="sep">·</span>${empatadosTxt} empat.
         </div>
       </div>`;
     }).join("");
