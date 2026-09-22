@@ -70,7 +70,8 @@
     #view-capa, .btn.back { display: none !important; }
     .card { break-inside: avoid; }
     .cards { grid-template-columns: repeat(3, 1fr); }
-    .table-scroll { overflow: visible !important; width: 100% !important; }
+    .table-scroll { overflow: visible !important; width: 100% !important; max-height: none !important; }
+    #analTable thead th { position: static !important; }
     #analTable { font-size: 7.5px; table-layout: fixed; width: 100% !important; }
     #analTable th, #analTable td {
       padding: 2px 3px; white-space: normal; word-break: break-word;
@@ -336,6 +337,18 @@
   }
 
   .table-scroll { overflow-x: auto; }
+
+  /* Analítico: trava a linha de cabeçalho da tabela ao rolar, para os rótulos
+     ficarem sempre visíveis mesmo com muitas linhas. Precisa de uma altura
+     limitada no próprio container (não a página) para o "sticky" ter uma
+     caixa de rolagem real para travar contra — sem isso, como o container já
+     tem overflow-x:auto (o que força overflow-y a computar como auto também),
+     ele "rola" junto com a página inteira e o cabeçalho nunca fica visível. */
+  #view-analitico .table-scroll { max-height: 70vh; }
+  #analTable thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--paper); padding-top: 8px;
+  }
 
   /* ---------- Analítico ---------- */
   .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
