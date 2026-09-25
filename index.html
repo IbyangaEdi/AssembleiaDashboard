@@ -295,6 +295,25 @@
   .panel h3 { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
   .panel h3 .range-toggle { font-size: 11px; }
 
+  /* Toggle Imob/Auto (taxa de administração do Consórcio: 25% Imobiliário, 16% Automóvel) */
+  .taxa-toggle { display: flex; align-items: center; gap: 8px; }
+  .taxa-toggle-lbl {
+    font-size: 11px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase;
+    letter-spacing: .02em; transition: color .15s ease;
+  }
+  .taxa-toggle-lbl.active { color: var(--gold); }
+  .taxa-toggle-switch {
+    appearance: none; position: relative; width: 38px; height: 20px; border-radius: 999px;
+    background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; padding: 0;
+    flex-shrink: 0; transition: background .15s ease, border-color .15s ease;
+  }
+  .taxa-toggle-switch .knob {
+    position: absolute; top: 1px; left: 1px; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--ink-soft); transition: transform .15s ease, background .15s ease;
+  }
+  .taxa-toggle-switch.on { background: var(--gold-soft); border-color: var(--gold); }
+  .taxa-toggle-switch.on .knob { transform: translateX(18px); background: var(--gold); }
+
   .section-divider { border: none; border-top: 1px solid var(--line-strong); margin: 28px 0; }
   .prob-frame > h3 { font-size: 16px; margin-bottom: 18px; }
   .prob-subsection { margin-top: 22px; padding-top: 22px; border-top: 1px dashed var(--line); }
@@ -840,9 +859,12 @@
     });
   }
 
-  // Taxa total (administração + fundo de reserva) usada em toda a Simulação de compra —
-  // fixa por instrução do Edval, não editável no painel.
-  const TAXA_TOTAL_PCT = 25;
+  // Taxa total (administração + fundo de reserva) usada na Simulação de compra — fixa por
+  // instrução do Edval (não editável livremente no painel), mas com dois valores possíveis
+  // conforme o tipo de consórcio, alternados pelo toggle Imob/Auto no card Consórcio:
+  // Imobiliário = 25%, Automóvel = 16%.
+  const TAXA_IMOB_PCT = 25;
+  const TAXA_AUTO_PCT = 16;
 
   // Máscara de moeda (R$ 1.234.567,89) para o campo Valor do crédito — digita-se da direita
   // pra esquerda, como calculadora/maquininha, para nunca gerar um valor mal formatado.
@@ -899,6 +921,7 @@
     const row = (lbl, val) => `<div class="exp-row"><span>${lbl}</span><b>${val}</b></div>`;
 
     const consorcioRows = [
+      row("Tipo de consórcio", (compraFormState.tipoConsorcio === "auto" ? "Automóvel" : "Imobiliário") + ` (taxa ${taxaAdmPct()}%)`),
       row("Valor do crédito", "R$ " + (document.getElementById("simCredito").value || "0")),
       row("Percentual de lance", (document.getElementById("simLancePct").value || "0") + "%"),
       row("Lance embutido", (document.getElementById("simEmbutidoPct").value || "0") + "%"),
@@ -1686,8 +1709,13 @@
   // Valores digitados no simulador de Consórcio/Financiamento — persistem ao trocar o
   // grupo selecionado (renderProbDetail() lê o DOM atual para cá antes de re-renderizar,
   // e usa esses valores como "value" inicial do novo HTML, em vez de zerar tudo de novo).
-  const compraFormState = { credito: "0,00", lancePct: "0.00", embutidoPct: "0", prazoRestante: "0" };
+  const compraFormState = { credito: "0,00", lancePct: "0.00", embutidoPct: "0", prazoRestante: "0", tipoConsorcio: "imob" };
   const finFormState = { sistema: "PRICE", taxaAnual: "10", prazoMeses: "360" };
+
+  // Taxa de administração atual conforme o toggle Imob/Auto do card Consórcio.
+  function taxaAdmPct() {
+    return compraFormState.tipoConsorcio === "auto" ? TAXA_AUTO_PCT : TAXA_IMOB_PCT;
+  }
 
   function selectProbGrupo(codigo) {
     currentProbGrupo = codigo;
@@ -1738,7 +1766,8 @@
     // simular, não o do grupo que estiver escolhido lá embaixo).
     const prazoRestanteAtual = Math.max(0, Math.round(num("simPrazoRestante")));
 
-    const saldoDevedorTotal = credito * (1 + TAXA_TOTAL_PCT / 100);
+    const taxaAtual = taxaAdmPct();
+    const saldoDevedorTotal = credito * (1 + taxaAtual / 100);
     const parcelaContratacao = prazoRestanteAtual > 0 ? saldoDevedorTotal / prazoRestanteAtual : null;
 
     const valorLanceTotal = credito * lancePct / 100;
@@ -1754,6 +1783,8 @@
     const parcelaPos = (novoPrazoRemanescente > 0 && novoSaldo > 0) ? novoSaldo / novoPrazoRemanescente : null;
 
     const set = (id, text) => { const e = el(id); if (e) e.textContent = text; };
+    const contratacaoLbl = el("compraParcelaContratacaoLbl");
+    if (contratacaoLbl) contratacaoLbl.dataset.tip = `crédito + ${taxaAtual}% de taxas (${compraFormState.tipoConsorcio === "auto" ? "Automóvel" : "Imobiliário"}) ÷ prazo informado ao lado`;
     set("compraParcelaContratacao", parcelaContratacao === null ? "—" : fmtBRL(parcelaContratacao));
     set("compraLanceTotal", fmtBRL(valorLanceTotal));
     set("compraLanceProprio", fmtBRL(valorLanceProprio));
@@ -1888,7 +1919,14 @@
     document.getElementById("probDetail").innerHTML = `
       <div class="split-row">
       <div class="panel compra-panel">
-        <h3>Consórcio</h3>
+        <h3>
+          Consórcio
+          <div class="taxa-toggle" id="taxaTipoToggle">
+            <span class="taxa-toggle-lbl${compraFormState.tipoConsorcio === "imob" ? " active" : ""}" data-val="imob">Imob</span>
+            <button type="button" class="taxa-toggle-switch${compraFormState.tipoConsorcio === "auto" ? " on" : ""}" id="taxaTipoSwitch" role="switch" aria-checked="${compraFormState.tipoConsorcio === "auto"}"><span class="knob"></span></button>
+            <span class="taxa-toggle-lbl${compraFormState.tipoConsorcio === "auto" ? " active" : ""}" data-val="auto">Auto</span>
+          </div>
+        </h3>
         <div class="compra-grid">
           <div class="compra-field">
             <span class="lbl">Valor do crédito</span>
@@ -1910,7 +1948,7 @@
 
         <div class="callout-row">
           <div class="callout">
-            <div class="label"><span class="label-text" id="compraParcelaContratacaoLbl" data-tip="crédito + ${TAXA_TOTAL_PCT}% de taxas ÷ prazo informado ao lado">Parcela na contratação</span></div>
+            <div class="label"><span class="label-text" id="compraParcelaContratacaoLbl" data-tip="crédito + ${taxaAdmPct()}% de taxas ÷ prazo informado ao lado">Parcela na contratação</span></div>
             <div class="value num" id="compraParcelaContratacao">—</div>
           </div>
           <div class="callout">
@@ -2085,6 +2123,18 @@
     ["simCredito", "simLancePct", "simEmbutidoPct", "simPrazoRestante"].forEach(id => {
       const field = document.getElementById(id);
       if (field) field.addEventListener("input", () => updateCompraSim());
+    });
+
+    const taxaSwitch = document.getElementById("taxaTipoSwitch");
+    if (taxaSwitch) taxaSwitch.addEventListener("click", () => {
+      compraFormState.tipoConsorcio = compraFormState.tipoConsorcio === "auto" ? "imob" : "auto";
+      const isAuto = compraFormState.tipoConsorcio === "auto";
+      taxaSwitch.classList.toggle("on", isAuto);
+      taxaSwitch.setAttribute("aria-checked", String(isAuto));
+      document.querySelectorAll("#taxaTipoToggle .taxa-toggle-lbl").forEach(lbl => {
+        lbl.classList.toggle("active", lbl.dataset.val === compraFormState.tipoConsorcio);
+      });
+      updateCompraSim();
     });
 
     ["finSistema", "finTaxaAnual", "finPrazoMeses"].forEach(id => {
